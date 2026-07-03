@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AGORA OS — Colony Live</title>
+  <meta name="description" content="Live visualization of the AGORA OS autonomous agent economy." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta property="og:title"       content="AGORA OS — Live Colony" />
+  <meta property="og:description" content="Watch 50 autonomous AI agents earn, trade, and go bankrupt in real time." />
+  <meta property="og:image"       content="https://agora-os.xyz/og-image.png" />
+  <meta name="twitter:card"       content="summary_large_image" />
+  <meta name="twitter:image"      content="https://agora-os.xyz/og-image.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400;1,600&family=Cormorant+SC:wght@300;400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --marble:   #EDE8DF; --marble2: #E4DDD3;
+      --navy:     #1B3A5C; --navyd:   #0D2035; --navym: #2A4F7A;
+      --pale:     #C8D8E8; --stone:   #9A9080;
+      --ink:      #2C2416; --muted:   rgba(237,232,223,0.42);
+      --line:     rgba(237,232,223,0.09);
+      --gold:     #A8842C; --blood:   #7A1E12;
+      --serif:    'Cormorant Garamond',Georgia,serif;
+      --caps:     'Cormorant SC',Georgia,serif;
+      --mono:     'JetBrains Mono',monospace;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{width:100%;height:100%;overflow:hidden;background:var(--navyd)}
+    body{font-family:var(--mono);color:var(--marble);display:flex;flex-direction:column}
+
+    /* HEADER */
+    header{
+      flex-shrink:0;height:50px;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 1.5rem;
+      background:var(--navyd);border-bottom:1px solid var(--line);
+    }
+    .h-logo{display:flex;align-items:center;gap:.55rem;text-decoration:none}
+    .h-alpha{font-family:var(--serif);font-style:italic;font-size:1.6rem;color:var(--marble);line-height:1}
+    .h-name{font-family:var(--caps);font-size:.6rem;letter-spacing:.22em;color:var(--muted)}
+    .h-pills{display:flex;gap:1.8rem;flex:1;justify-content:center}
+    .h-pill{text-align:center}
+    .h-pv{font-size:.72rem;color:var(--marble);letter-spacing:.03em}
+    .h-pl{font-size:.5rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:1px}
+    .h-right{display:flex;align-items:center;gap:.75rem;flex-shrink:0}
+    .badge{font-size:.55rem;letter-spacing:.1em;color:var(--muted);border:1px solid var(--line);padding:.2rem .55rem}
+    .badge.live{color:#6aB080;border-color:rgba(106,176,128,.35)}
+    .dot{width:6px;height:6px;border-radius:50%;background:#6aB080;animation:blink-dot 2s ease infinite}
+    @keyframes blink-dot{0%,100%{opacity:1}50%{opacity:.3}}
+
+    /* LAYOUT */
+    .main-row{flex:1;display:flex;min-height:0}
+    #canvas-wrap{flex:1 1 0;min-width:0;position:relative;background:var(--marble);overflow:hidden}
+    #colony{display:block;width:100%;height:100%}
+
+    /* PANEL */
+    .panel{flex:0 0 290px;display:flex;flex-direction:column;background:var(--navyd);border-left:1px solid var(--line);overflow:hidden}
+    .pb{flex-shrink:0;padding:.9rem 1.1rem;border-bottom:1px solid var(--line)}
+    .pb-label{font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.7rem}
+
+    /* Prices */
+    .pr-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.42rem}
+    .pr-name{font-size:.58rem;letter-spacing:.08em;color:rgba(237,232,223,.55);min-width:4.5rem}
+    .pr-bar-bg{flex:1;height:2px;background:rgba(237,232,223,.07)}
+    .pr-bar-fill{height:100%;background:var(--pale);transition:width .7s ease}
+    .pr-val{font-size:.68rem;color:var(--marble);min-width:3.5rem;text-align:right}
+    .pr-arr{font-size:.5rem;min-width:.7rem}
+    .up{color:#6aB080}.down{color:var(--blood)}.flat{color:var(--muted)}
+
+    /* Metrics */
+    .mg{display:grid;grid-template-columns:1fr 1fr;gap:.4rem .8rem}
+    .mv{font-size:.82rem;color:var(--marble)}
+    .ml{font-size:.48rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:1px}
+    .gini-row{margin-top:.6rem;display:flex;align-items:center;gap:.5rem}
+    .gini-l{font-size:.48rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+    .gini-bg{flex:1;height:3px;background:rgba(237,232,223,.07);position:relative}
+    .gini-fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(to right,var(--navym),var(--pale));transition:width .8s ease}
+    .gini-v{font-size:.62rem;color:var(--marble);min-width:2.5rem;text-align:right}
+
+    /* Events */
+    .ev-scroll{flex:1;overflow-y:auto;min-height:0}
+    .ev-scroll::-webkit-scrollbar{width:2px}
+    .ev-scroll::-webkit-scrollbar-thumb{background:var(--line)}
+    .ev-row{display:flex;align-items:flex-start;gap:.4rem;padding:.25rem 0;border-bottom:1px solid rgba(237,232,223,.03);font-size:.55rem;line-height:1.4}
+    .ev-d{width:5px;height:5px;border-radius:50%;margin-top:.22rem;flex-shrink:0}
+    .dj{background:var(--gold)}.dt{background:var(--pale)}.db{background:var(--blood)}.dl{background:rgba(237,232,223,.3)}.ds{background:#8cb8cc}
+    .ev-type{color:var(--muted);min-width:4.5rem;flex-shrink:0;letter-spacing:.05em}
+    .ev-data{color:rgba(237,232,223,.7)}
+
+    /* Chronicle */
+    .chron{flex:0 0 auto;padding:.9rem 1.1rem;border-top:1px solid var(--line)}
+    .chron-cycle{font-size:.48rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+    .chron-text{font-family:var(--serif);font-style:italic;font-size:.88rem;color:rgba(237,232,223,.85);line-height:1.65;min-height:3.5rem}
+
+    /* Tooltip */
+    #tip{position:absolute;pointer-events:none;display:none;background:rgba(13,32,53,.93);border:1px solid var(--line);padding:.45rem .65rem;font-size:.58rem;line-height:1.7;color:var(--marble);backdrop-filter:blur(6px);z-index:10;max-width:180px}
+
+    @media(max-width:680px){.panel{display:none}.h-pills{gap:.8rem}}
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="h-logo" href="index.html">
+    <span class="h-alpha">α</span>
+    <span class="h-name">Agora OS</span>
+  </a>
+  <div class="h-pills">
+    <div class="h-pill"><div class="h-pv" id="hd-agents">50</div><div class="h-pl">alive</div></div>
+    <div class="h-pill"><div class="h-pv" id="hd-money">α 0</div><div class="h-pl">money supply</div></div>
+    <div class="h-pill"><div class="h-pv" id="hd-bust">0</div><div class="h-pl">bankruptcies</div></div>
+    <div class="h-pill"><div class="h-pv" id="hd-tick">tick 0</div><div class="h-pl">cycle <span id="hd-cycle">0</span></div></div>
+  </div>
+  <div class="h-right">
+    <span class="badge" id="mode-badge">SIM</span>
+    <span class="dot" id="dot"></span>
+  </div>
+</header>
+
+<div class="main-row">
+  <div id="canvas-wrap">
+    <canvas id="colony"></canvas>
+    <div id="tip"></div>
+  </div>
+
+  <div class="panel">
+    <div class="pb">
+      <div class="pb-label">Resource Prices</div>
+      <div class="pr-row"><span class="pr-name">compute</span><div class="pr-bar-bg"><div class="pr-bar-fill" id="pb-c" style="width:10%"></div></div><span class="pr-val" id="pv-c">α 1.00</span><span class="pr-arr flat" id="pa-c">─</span></div>
+      <div class="pr-row"><span class="pr-name">memory</span><div class="pr-bar-bg"><div class="pr-bar-fill" id="pb-m" style="width:30%"></div></div><span class="pr-val" id="pv-m">α 4.00</span><span class="pr-arr flat" id="pa-m">─</span></div>
+      <div class="pr-row"><span class="pr-name">inference</span><div class="pr-bar-bg"><div class="pr-bar-fill" id="pb-i" style="width:5%"></div></div><span class="pr-val" id="pv-i">α 1.00</span><span class="pr-arr flat" id="pa-i">─</span></div>
+    </div>
+
+    <div class="pb">
+      <div class="pb-label">Colony Metrics</div>
+      <div class="mg">
+        <div><div class="mv" id="m-alive">50</div><div class="ml">alive</div></div>
+        <div><div class="mv" id="m-busts">0</div><div class="ml">total busts</div></div>
+        <div><div class="mv" id="m-money">α 0</div><div class="ml">money supply</div></div>
+        <div><div class="mv" id="m-debt">α 0</div><div class="ml">debt outstanding</div></div>
+      </div>
+      <div class="gini-row">
+        <span class="gini-l">Gini</span>
+        <div class="gini-bg"><div class="gini-fill" id="gf" style="width:0%"></div></div>
+        <span class="gini-v" id="gv">0.00</span>
+      </div>
+    </div>
+
+    <div class="pb" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+      <div class="pb-label">Live Events</div>
+      <div class="ev-scroll" id="evlist"></div>
+    </div>
+
+    <div class="chron">
+      <div class="chron-cycle" id="ch-cycle">cycle 0</div>
+      <div class="chron-text" id="ch-text">the colony is initializing.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+//  SEEDED RNG (same as engine — mulberry32)
+// ════════════════════════════════════════════════════════════
+function mkRng(seed) {
+  let s = seed >>> 0;
+  return () => { s|=0; s=(s+0x6d2b79f5)|0; let t=Math.imul(s^s>>>15,1|s); t=(t+Math.imul(t^t>>>7,61|t))^t; return ((t^t>>>14)>>>0)/4294967296; };
+}
+const rng = mkRng(42);
+const rr  = (a,b) => a + rng()*(b-a);
+const ri  = (a,b) => Math.floor(rr(a,b+1));
+function shuffle(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+// ════════════════════════════════════════════════════════════
+//  CANVAS SETUP
+// ════════════════════════════════════════════════════════════
+const canvas = document.getElementById('colony');
+const ctx    = canvas.getContext('2d');
+const wrap   = document.getElementById('canvas-wrap');
+
+function resize() {
+  canvas.width  = wrap.clientWidth;
+  canvas.height = wrap.clientHeight;
+  buildFloor(canvas.width, canvas.height);
+}
+window.addEventListener('resize', resize);
+
+// ════════════════════════════════════════════════════════════
+//  STONE FLOOR (generate once)
+// ════════════════════════════════════════════════════════════
+let floorTiles = [];
+function buildFloor(W, H) {
+  const fr = mkRng(9999);
+  floorTiles = [];
+  const GW = 88, GH = 52, PERT = 11;
+  const cols = Math.ceil(W/GW)+1, rows = Math.ceil(H/GH)+1;
+  const verts = [];
+  for (let r=0; r<=rows; r++) { verts[r]=[]; for (let c=0; c<=cols; c++) verts[r][c]={x:c*GW+(fr()-.5)*PERT, y:r*GH+(fr()-.5)*PERT}; }
+  for (let r=0; r<rows; r++) for (let c=0; c<cols; c++) {
+    const b = 234 + Math.floor((fr()-.5)*10);
+    const warm = Math.floor((fr()-.5)*6);
+    floorTiles.push({ pts:[verts[r][c],verts[r][c+1],verts[r+1][c+1],verts[r+1][c]], r:b+warm, g:b-2, b_:b-10 });
+  }
+}
+
+function drawFloor(W, H) {
+  for (const t of floorTiles) {
+    ctx.beginPath(); ctx.moveTo(t.pts[0].x,t.pts[0].y);
+    for (let i=1;i<4;i++) ctx.lineTo(t.pts[i].x,t.pts[i].y);
+    ctx.closePath();
+    ctx.fillStyle = `rgb(${t.r},${t.g},${t.b_})`;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(27,58,92,0.055)'; ctx.lineWidth=.6; ctx.stroke();
+  }
+  // subtle vignette
+  const vg = ctx.createRadialGradient(W*.5,H*.5,Math.min(W,H)*.25,W*.5,H*.5,Math.max(W,H)*.75);
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(13,32,53,0.18)');
+  ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
+}
+
+// ════════════════════════════════════════════════════════════
+//  SIMULATION STATE (shared by local sim + API)
+// ════════════════════════════════════════════════════════════
+const CFG = {
+  initialAgents:50, lifeTaxBase:1, memoryUpkeep:.05, deathGrace:3,
+  jobBaseCount:8, jobsPerAgent:.06, jobBaseReward:3, subsistenceCompute:3,
+  memoryProductivity:.03, maxProductivityMult:3,
+  computeMintPerTick:30, memoryMintPerTick:8, priceK:.15,
+  creditEnabled:true, loanRate:.01, loanTerm:30, ticksPerCycle:60,
+};
+
+let agents  = [];        // live display agents {id,wallet,memory,compute,inference,age,deathCountdown,debts, x,y,vx,vy,pulseAt,deathAt,deathX,deathY}
+let prices  = {compute:1,memory:4,inference:1};
+let prevPrices = {...prices};
+let debtLinks  = [];     // [{creditor,debtor,outstanding}] for drawing
+let simTick    = 0;
+let simCycle   = 0;
+let totalBusts = 0;
+let isLive     = false;  // connected to API?
+
+const arcs      = [];    // {ax,ay,bx,by,color,life,fade}
+const particles = [];    // {x,y,vx,vy,life,fade,text,color,size}
+const deaths    = [];    // {x,y,life,fade,r}
+let   screenFlash = null;
+let   dispatch  = null;  // {text,typed:'',idx:0,age:0,phase:'type'|'hold'|'fade',alpha:1}
+
+const eventLog = [];
+let cycleGdp   = 0;
+
+// ════════════════════════════════════════════════════════════
+//  LOCAL SIMULATION (fallback when API unavailable)
+// ════════════════════════════════════════════════════════════
+function makeAgent(idx, W, H) {
+  return {
+    id: 'a'+(idx*2654435761%0xffff).toString(16).padStart(4,'0'),
+    wallet: rr(20,60), compute:rr(5,20), memory:rr(0,5), inference:rr(0,5),
+    age:0, alive:true, deathCountdown:CFG.deathGrace, debtAmt:0,
+    x:rr(80,W-80), y:rr(80,H-80), vx:0, vy:0,
+    pulseAt:-99, deathAt:-1, deathX:0, deathY:0,
+  };
+}
+function productivity(a) { return Math.min(CFG.maxProductivityMult, 1+a.memory*CFG.memoryProductivity); }
+
+function simStep() {
+  if (isLive) return;
+  simTick++;
+  prevPrices = {...prices};
+  const alive = agents.filter(a=>a.alive);
+
+  // life tax
+  for (const a of alive) { a.wallet -= CFG.lifeTaxBase + a.memory*CFG.memoryUpkeep; a.age++; a.compute += CFG.subsistenceCompute; }
+
+  // jobs
+  const n = Math.max(3, Math.round(CFG.jobBaseCount + alive.length*CFG.jobsPerAgent) + ri(-1,1));
+  const sc = Math.max(0, 1-n/Math.max(1,alive.length));
+  const jobs = Array.from({length:n}, ()=>({reward:CFG.jobBaseReward*(1+.5*sc), cost:rr(1,3)}));
+  const workers = shuffle(alive), assigned=new Set();
+  for (const j of jobs.sort((a,b)=>b.reward-a.reward)) {
+    for (const a of workers) {
+      if (assigned.has(a.id) || a.compute<j.cost) continue;
+      const prod = productivity(a); const rew = j.reward*prod;
+      a.compute -= j.cost; a.wallet += rew; assigned.add(a.id);
+      cycleGdp += rew; a.pulseAt = simTick;
+      spawnParticle(a.x, a.y, 'α', '#A8842C');
+      addEvent('job', `${a.id}  α${rew.toFixed(1)}  ×${prod.toFixed(1)}`, 'j'); break;
+    }
+  }
+
+  // resource trade
+  for (const a of shuffle([...alive])) {
+    const cost = CFG.lifeTaxBase + a.memory*CFG.memoryUpkeep;
+    if (a.wallet > cost*8 && rng()<.13) {
+      const price=prices.memory, budget=(a.wallet-cost*6)*.25;
+      const qty=Math.max(1,Math.floor(budget/Math.max(price,.5)));
+      if (qty>=1 && a.wallet>=price*qty) {
+        const sel=shuffle([...alive]).find(b=>b!==a&&b.memory>=qty&&b.wallet>cost*2);
+        if (sel) { a.wallet-=price*qty; a.memory+=qty; sel.wallet+=price*qty; sel.memory-=qty; spawnArc(a.x,a.y,sel.x,sel.y,'rgba(200,216,232,0.55)'); addEvent('trade',`${a.id}←mem×${qty}←${sel.id}  α${(price*qty).toFixed(1)}`,'t'); }
+        else { a.wallet-=price*qty; a.memory+=qty; addEvent('trade',`${a.id}  mem×${qty}  α${(price*qty).toFixed(1)}`,'t'); }
+      }
+    }
+  }
+
+  // credit
+  if (simTick%6===0) {
+    debtLinks = [];
+    for (const a of shuffle([...alive])) {
+      const cost=CFG.lifeTaxBase+a.memory*CFG.memoryUpkeep;
+      if (a.wallet<cost*2 && a.debtAmt===0 && rng()<.3) {
+        const lend=alive.find(b=>b!==a&&b.wallet>cost*8);
+        if (lend) { const amt=cost*5; lend.wallet-=amt; a.wallet+=amt; a.debtAmt=amt; spawnArc(a.x,a.y,lend.x,lend.y,'rgba(168,132,44,0.4)'); addEvent('loan',`${lend.id}→${a.id}  α${amt.toFixed(1)}`,'l'); debtLinks.push({creditor:lend.id,debtor:a.id,outstanding:amt}); }
+      }
+      if (a.debtAmt>0 && a.wallet>(CFG.lifeTaxBase+a.memory*CFG.memoryUpkeep)*5) { const pay=Math.min(a.debtAmt,a.wallet*0.3); a.wallet-=pay; a.debtAmt=Math.max(0,a.debtAmt-pay); if (a.debtAmt<0.5) a.debtAmt=0; }
+    }
+  }
+
+  // prices
+  const mD=alive.filter(a=>a.wallet>20).length*.18, mS=CFG.memoryMintPerTick*.4+alive.reduce((s,a)=>s+a.memory*.03,0);
+  prices.memory = Math.max(.5,Math.min(15,prices.memory*(1+CFG.priceK*(mD-mS)/Math.max(mS,1))));
+  const cD=alive.length*.08, cS=CFG.computeMintPerTick*.08;
+  prices.compute = Math.max(.25,Math.min(5,prices.compute*(1+CFG.priceK*(cD-cS)/Math.max(cS,1))));
+
+  // bankruptcy
+  for (const a of alive) {
+    if (a.wallet<=0) { a.deathCountdown--; if (a.deathCountdown<=0) { a.alive=false; a.deathAt=simTick; a.deathX=a.x; a.deathY=a.y; totalBusts++; spawnDeath(a.x,a.y,coinRadius(a)); addEvent('bankruptcy',`${a.id}  age:${a.age}`,'b'); if(screenFlash===null)screenFlash={life:1,fade:.06}; } }
+    else a.deathCountdown=CFG.deathGrace;
+  }
+
+  // shock every 120 ticks
+  if (simTick%120===0&&simTick>0) { const r=['memory','compute'][ri(0,1)]; prices[r]=Math.min(prices[r]*1.3,r==='memory'?15:5); addEvent('shock',`${r} price shock`,'s'); }
+
+  if (simTick%CFG.ticksPerCycle===0) { simCycle++; cycleGdp=0; generateChronicle(); }
+  updateUI();
+}
+
+// ════════════════════════════════════════════════════════════
+//  API MODE — replace state from SSE __tick__ messages
+// ════════════════════════════════════════════════════════════
+function applyServerTick(d) {
+  simTick  = d.tick;
+  simCycle = d.cycle;
+  prevPrices = {...prices};
+  prices   = d.prices;
+  debtLinks= d.debts || [];
+
+  // merge agents: update existing, remove dead, keep physics
+  const W = canvas.width, H = canvas.height;
+  const incoming = new Map(d.agents.map(a=>[a.id,a]));
+
+  // mark deaths
+  for (const a of agents) {
+    if (a.alive && !incoming.has(a.id)) {
+      a.alive=false; a.deathAt=simTick; a.deathX=a.x; a.deathY=a.y;
+      totalBusts++; spawnDeath(a.x,a.y,coinRadius(a));
+      if(screenFlash===null) screenFlash={life:1,fade:.06};
+    }
+  }
+
+  // update existing
+  const seen = new Set();
+  for (const a of agents) {
+    const sv = incoming.get(a.id);
+    if (!sv) continue;
+    const prev = a.wallet;
+    a.wallet=sv.wallet; a.memory=sv.memory; a.compute=sv.compute;
+    a.inference=sv.inference; a.age=sv.age; a.deathCountdown=sv.deathCountdown; a.debtAmt=sv.debts;
+    if (sv.name)  a.name = sv.name;
+    if (sv.tier !== undefined) a.tier = sv.tier;
+    if (sv.wallet > prev+0.5) { a.pulseAt=simTick; spawnParticle(a.x,a.y,'α','#A8842C'); }
+    seen.add(a.id);
+  }
+
+  // spawn new agents (rare — if they could be born)
+  for (const sv of d.agents) {
+    if (!seen.has(sv.id)) {
+      const a = makeAgent(agents.length, W, H);
+      Object.assign(a, {id:sv.id, wallet:sv.wallet, memory:sv.memory, compute:sv.compute, inference:sv.inference, age:sv.age, deathCountdown:sv.deathCountdown, debtAmt:sv.debts||0, name:sv.name, tier:sv.tier||0});
+      agents.push(a);
+    }
+  }
+
+  updateUI();
+}
+
+function agentLabel(id) {
+  const a = agents.find(x=>x.id===id);
+  return (a && a.name) ? `${a.name}(${id})` : id;
+}
+function applyServerEvent(ev) {
+  if (ev.type==='job_completed')  { addEvent('job',    `${agentLabel(ev.data.agent)}  α${Number(ev.data.reward).toFixed(1)}`,'j'); const a=agents.find(x=>x.id===ev.data.agent); if(a){a.pulseAt=simTick;} }
+  if (ev.type==='trade')          { addEvent('trade',  `${agentLabel(ev.data.buyer)}←${ev.data.resource}×${ev.data.qty}`,'t'); const a=agents.find(x=>x.id===ev.data.buyer),b=agents.find(x=>x.id===ev.data.seller); if(a&&b)spawnArc(a.x,a.y,b.x,b.y,'rgba(200,216,232,0.55)'); }
+  if (ev.type==='loan_originated'){ addEvent('loan',   `${agentLabel(ev.data.creditor)}→${agentLabel(ev.data.debtor)}  α${Number(ev.data.amount).toFixed(1)}`,'l'); const a=agents.find(x=>x.id===ev.data.debtor),b=agents.find(x=>x.id===ev.data.creditor); if(a&&b)spawnArc(a.x,a.y,b.x,b.y,'rgba(168,132,44,0.4)'); }
+  if (ev.type==='bankruptcy')     { addEvent('bankruptcy',`${agentLabel(ev.data.id)}  age:${ev.data.age}`,'b'); }
+  if (ev.type==='agent_born' && ev.data.spawned) { addEvent('spawn', `${ev.data.name||ev.data.id}  entered  α${Number(ev.data.wallet).toFixed(1)}`,'s'); }
+  if (ev.type==='shock')          { addEvent('shock',  `${ev.data.resource} price shock`,'s'); }
+  if (ev.type==='cycle_snapshot') { simCycle=Number(ev.data.cycle); cycleGdp=0; generateChronicle(); }
+}
+
+// ════════════════════════════════════════════════════════════
+//  API CONNECTION
+// ════════════════════════════════════════════════════════════
+const API = 'http://localhost:3001';
+let apiRetries = 0;
+
+async function connectAPI() {
+  try {
+    const r = await fetch(`${API}/api/health`, {signal: AbortSignal.timeout(1500)});
+    if (!r.ok) throw new Error();
+    isLive = true;
+    document.getElementById('mode-badge').textContent = 'LIVE';
+    document.getElementById('mode-badge').classList.add('live');
+    console.log('[AGORA] connected to API');
+    startSSE();
+  } catch {
+    apiRetries++;
+    if (apiRetries < 3) setTimeout(connectAPI, 2000);
+  }
+}
+
+function startSSE() {
+  const es = new EventSource(`${API}/api/events`);
+  es.onmessage = e => {
+    if (!e.data || e.data.startsWith(':')) return;
+    try {
+      const d = JSON.parse(e.data);
+      if (d.type==='__tick__') applyServerTick(d);
+      else applyServerEvent(d);
+    } catch {}
+  };
+  es.onerror = () => { isLive=false; document.getElementById('mode-badge').textContent='SIM'; document.getElementById('mode-badge').classList.remove('live'); es.close(); setTimeout(connectAPI,3000); };
+}
+
+// ════════════════════════════════════════════════════════════
+//  VISUAL HELPERS
+// ════════════════════════════════════════════════════════════
+function spawnArc(ax,ay,bx,by,color) { arcs.push({ax,ay,bx,by,color,life:1,fade:.045}); }
+function spawnParticle(x,y,text,color) { particles.push({x,y,vx:(rng()-.5)*1.4,vy:-(1.4+rng()*1.8),life:1,fade:.025,text,color,size:11}); }
+function spawnDeath(x,y,r) {
+  deaths.push({x,y,r,life:1,fade:.03});
+  for (let i=0;i<14;i++) {
+    const ang=i/14*Math.PI*2+rng()*.4, sp=1.5+rng()*3;
+    particles.push({x:x+(rng()-.5)*8,y:y+(rng()-.5)*8,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp,life:1,fade:.032,text:'·',color:'#7A1E12',size:13});
+  }
+}
+
+function addEvent(type, text, cls) {
+  eventLog.unshift({type,text,cls});
+  if (eventLog.length>80) eventLog.pop();
+  renderEvents();
+}
+
+const CLS_MAP = {j:'dj',t:'dt',b:'db',l:'dl',s:'ds'};
+function renderEvents() {
+  const el=document.getElementById('evlist');
+  const typeName={j:'job',t:'trade',b:'bankrupt',l:'loan',s:'shock'};
+  el.innerHTML = eventLog.slice(0,28).map(e=>
+    `<div class="ev-row"><span class="ev-d ${CLS_MAP[e.cls]||'dt'}"></span><span class="ev-type">${typeName[e.cls]||e.type}</span><span class="ev-data">${e.text}</span></div>`
+  ).join('');
+}
+
+// ════════════════════════════════════════════════════════════
+//  CHRONICLE
+// ════════════════════════════════════════════════════════════
+const DISPATCHES = [
+  ()=>`the colony is cycle ${simCycle}. it has already invented a middle class.`,
+  ()=>`${aliveList()[0]?.id??'a0000'} leads the colony. the others are watching.`,
+  ()=>`${totalBusts} agents have gone bankrupt. the colony has not stopped.`,
+  ()=>`memory trades at α${prices.memory.toFixed(2)}. those who hold it earn more. we did not design this.`,
+  ()=>`cycle ${simCycle}. the gini coefficient is ${gini(aliveList().map(a=>a.wallet)).toFixed(2)}. the machines have invented inequality.`,
+  ()=>`there is no script. there are only rules and consequences.`,
+  ()=>`${aliveList().length} agents remain. the original population was ${CFG.initialAgents}.`,
+  ()=>`the colony discovered debt and is living with the consequences.`,
+];
+
+function aliveList() { return agents.filter(a=>a.alive).sort((a,b)=>b.wallet-a.wallet); }
+function gini(vals) { const xs=vals.filter(v=>v>=0).sort((a,b)=>a-b),n=xs.length; if(!n)return 0; const tot=xs.reduce((s,v)=>s+v,0);if(!tot)return 0;let c=0;for(let i=0;i<n;i++)c+=(2*(i+1)-n-1)*xs[i];return c/(n*tot); }
+
+function generateChronicle() {
+  const text = DISPATCHES[ri(0,DISPATCHES.length-1)]();
+  dispatch = {text:`"${text}"`, typed:'', idx:0, age:0, phase:'type', alpha:1};
+  document.getElementById('ch-cycle').textContent = `cycle ${simCycle}`;
+}
+
+function tickDispatch() {
+  if (!dispatch) return;
+  dispatch.age++;
+  if (dispatch.phase==='type') {
+    if (dispatch.age%2===0 && dispatch.idx<dispatch.text.length) dispatch.typed+=dispatch.text[dispatch.idx++];
+    if (dispatch.idx>=dispatch.text.length) { dispatch.phase='hold'; dispatch.age=0; }
+    document.getElementById('ch-text').textContent = dispatch.typed+'▮';
+  } else if (dispatch.phase==='hold') {
+    document.getElementById('ch-text').textContent = dispatch.typed;
+    if (dispatch.age>90) { dispatch.phase='fade'; dispatch.age=0; }
+  } else {
+    dispatch.alpha = Math.max(0, 1-dispatch.age/40);
+    document.getElementById('ch-text').style.opacity = dispatch.alpha;
+    if (dispatch.alpha<=0) { dispatch=null; document.getElementById('ch-text').style.opacity=1; }
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+//  UI UPDATE
+// ════════════════════════════════════════════════════════════
+function updateUI() {
+  const alive = aliveList();
+  const n = alive.length;
+  const money = alive.reduce((s,a)=>s+a.wallet,0);
+  const g = gini(alive.map(a=>a.wallet));
+  const debt = agents.reduce((s,a)=>s+a.debtAmt,0);
+
+  document.getElementById('hd-agents').textContent = n;
+  document.getElementById('hd-money').textContent = 'α\u2009'+money.toFixed(0);
+  document.getElementById('hd-bust').textContent = totalBusts;
+  document.getElementById('hd-tick').textContent = 'tick '+simTick;
+  document.getElementById('hd-cycle').textContent = simCycle;
+
+  const PM={c:{max:5},m:{max:15},i:{max:60}};
+  [['c',prices.compute,prevPrices.compute],['m',prices.memory,prevPrices.memory],['i',prices.inference,prevPrices.inference]].forEach(([k,v,pv])=>{
+    const max=PM[k].max;
+    document.getElementById('pb-'+k).style.width=Math.min(100,v/max*100)+'%';
+    document.getElementById('pv-'+k).textContent='α '+v.toFixed(2);
+    const diff=v-pv, el=document.getElementById('pa-'+k);
+    if(diff>.008){el.textContent='▲';el.className='pr-arr up';}
+    else if(diff<-.008){el.textContent='▼';el.className='pr-arr down';}
+    else{el.textContent='─';el.className='pr-arr flat';}
+  });
+
+  document.getElementById('m-alive').textContent = n;
+  document.getElementById('m-busts').textContent = totalBusts;
+  document.getElementById('m-money').textContent = 'α\u2009'+money.toFixed(0);
+  document.getElementById('m-debt').textContent  = 'α\u2009'+debt.toFixed(0);
+  document.getElementById('gf').style.width = (g*100)+'%';
+  document.getElementById('gv').textContent = g.toFixed(2);
+}
+
+// ════════════════════════════════════════════════════════════
+//  COIN RENDERING
+// ════════════════════════════════════════════════════════════
+function coinRadius(a) { return Math.max(9, Math.min(48, 10+Math.sqrt(Math.max(0,a.wallet))*1.7)); }
+
+function coinColors(a) {
+  const w = Math.max(0,a.wallet);
+  const dying = a.wallet<=0 && a.deathCountdown<CFG.deathGrace;
+  if (dying) { const t=(Math.sin(Date.now()*.008)*.5+.5); return [`rgb(${80+Math.floor(t*30)},20,20)`,`#4A1515`,'#200A0A']; }
+  if (w>80)  return ['#3A72A8','#1B3A5C','#0D1E30'];
+  if (w>50)  return ['#2E5F8A','#1B3A5C','#111D2E'];
+  if (w>28)  return ['#3A6678','#22455A','#121F28'];
+  if (w>12)  return ['#5A7A90','#2E4A5A','#151F25'];
+  return ['#7A9098','#485A64','#1E2A2E'];
+}
+
+function drawCoin(a) {
+  const r = coinRadius(a);
+  const [c0,c1,c2] = coinColors(a);
+  const {x,y} = a;
+
+  ctx.save();
+
+  // 1. Drop shadow
+  ctx.shadowColor   = 'rgba(0,0,0,0.38)';
+  ctx.shadowBlur    = r*.9;
+  ctx.shadowOffsetX = r*.12;
+  ctx.shadowOffsetY = r*.2;
+
+  // 2. Body radial gradient (light from top-left)
+  const bg = ctx.createRadialGradient(x-r*.3,y-r*.35,r*.04,x+r*.12,y+r*.12,r*1.18);
+  bg.addColorStop(0,c0); bg.addColorStop(.45,c1); bg.addColorStop(1,c2);
+  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fillStyle = bg; ctx.fill();
+  ctx.shadowBlur=0; ctx.shadowOffsetX=0; ctx.shadowOffsetY=0;
+
+  // 3. Top-left bevel highlight
+  ctx.beginPath(); ctx.arc(x,y,r-.5,Math.PI*1.15,Math.PI*-.05,false);
+  ctx.strokeStyle='rgba(255,255,255,0.13)'; ctx.lineWidth=1.3; ctx.stroke();
+
+  // 4. Bottom-right bevel shadow
+  ctx.beginPath(); ctx.arc(x,y,r-.5,Math.PI*-.05,Math.PI*1.15,false);
+  ctx.strokeStyle='rgba(0,0,0,0.3)'; ctx.lineWidth=1; ctx.stroke();
+
+  // 5. Inner engraved ring
+  ctx.beginPath(); ctx.arc(x,y,r*.76,0,Math.PI*2);
+  ctx.strokeStyle='rgba(200,220,240,0.1)'; ctx.lineWidth=.7; ctx.stroke();
+
+  // 6. Centre α symbol
+  if (r>11) {
+    ctx.globalAlpha=.78;
+    ctx.fillStyle='rgba(237,232,223,0.85)';
+    ctx.font=`italic ${Math.round(r*.82)}px 'Cormorant Garamond',serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('α',x,y+r*.04);
+  }
+
+  ctx.restore(); ctx.globalAlpha=1;
+
+  // 7. Named agent — gold ring highlight
+  if (a.name) {
+    ctx.beginPath(); ctx.arc(x,y,r+1.5,0,Math.PI*2);
+    ctx.strokeStyle='rgba(184,150,46,0.55)'; ctx.lineWidth=1.5; ctx.stroke();
+  }
+
+  // 8. Tier-1 badge (small T1 at top-right of coin)
+  if (a.tier===1 && r>14) {
+    ctx.save();
+    ctx.fillStyle='rgba(27,58,92,0.85)';
+    const bw=16, bh=10, bx=x+r*.6, by=y-r*.6-bh;
+    ctx.fillRect(bx-bw/2, by, bw, bh);
+    ctx.fillStyle='rgba(208,220,233,0.9)';
+    ctx.font=`bold 6.5px 'JetBrains Mono',monospace`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('T1', bx, by+bh/2+.5);
+    ctx.restore();
+  }
+
+  // 9. Wallet label above coin
+  if (r>22) {
+    ctx.fillStyle='rgba(44,36,22,0.38)';
+    ctx.font=`7px 'JetBrains Mono',monospace`;
+    ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    ctx.fillText('α'+Math.round(a.wallet), x, y-r-5);
+  }
+
+  // 10. Name (if set) or ID for notable agents, below coin
+  if (r>16) {
+    const label = a.name ? a.name : (r>30 ? a.id : null);
+    if (label) {
+      ctx.fillStyle = a.name ? 'rgba(184,150,46,0.75)' : 'rgba(44,36,22,0.28)';
+      ctx.font = a.name
+        ? `italic 8px 'Cormorant Garamond',serif`
+        : `6px 'JetBrains Mono',monospace`;
+      ctx.textAlign='center'; ctx.textBaseline='top';
+      ctx.fillText(label, x, y+r+4);
+    }
+  }
+
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+}
+
+function drawCoinsGlow(alive) {
+  // rich agents get a warm aura beneath them
+  for (const a of alive) {
+    const w=a.wallet;
+    if (w<60) continue;
+    const r=coinRadius(a);
+    const grd=ctx.createRadialGradient(a.x,a.y,r*.4,a.x,a.y,r*2.8);
+    const s=Math.min(.18,(w-60)/200*.18);
+    grd.addColorStop(0,`rgba(27,58,92,${s})`);
+    grd.addColorStop(1,'rgba(27,58,92,0)');
+    ctx.beginPath(); ctx.arc(a.x,a.y,r*2.8,0,Math.PI*2);
+    ctx.fillStyle=grd; ctx.fill();
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+//  PHYSICS
+// ════════════════════════════════════════════════════════════
+let physRng = mkRng(77);
+function physics() {
+  const W=canvas.width, H=canvas.height;
+  const living=agents.filter(a=>a.alive);
+  if (!living.length) return;
+  const CX=W*.5, CY=H*.5;
+
+  for (const a of living) {
+    const r=coinRadius(a), w=Math.max(0,a.wallet);
+    // wealth-based vertical stratification: rich float up, poor sink
+    const wNorm=Math.min(1,w/80);
+    const targetY=H*(0.72-wNorm*.44);
+    const targetX=CX+(physRng()-.5)*W*.08;
+    a.vx += (targetX-a.x)*.0005 + (physRng()-.5)*.08;
+    a.vy += (targetY-a.y)*.0008 + (physRng()-.5)*.08;
+  }
+
+  // repulsion
+  for (let i=0;i<living.length;i++) for (let j=i+1;j<living.length;j++) {
+    const a=living[i],b=living[j];
+    const dx=b.x-a.x, dy=b.y-a.y, d=Math.sqrt(dx*dx+dy*dy)||1;
+    const min=(coinRadius(a)+coinRadius(b))*1.15;
+    if (d<min*2.4) { const f=(min*2.4-d)*.022/d; a.vx-=dx*f;a.vy-=dy*f;b.vx+=dx*f;b.vy+=dy*f; }
+  }
+
+  for (const a of living) {
+    a.vx*=.88; a.vy*=.88;
+    a.x+=a.vx; a.y+=a.vy;
+    const r=coinRadius(a)+10;
+    if(a.x<r){a.x=r;a.vx=Math.abs(a.vx)*.4;}
+    if(a.x>W-r){a.x=W-r;a.vx=-Math.abs(a.vx)*.4;}
+    if(a.y<r){a.y=r;a.vy=Math.abs(a.vy)*.4;}
+    if(a.y>H-r){a.y=H-r;a.vy=-Math.abs(a.vy)*.4;}
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+//  MAIN RENDER LOOP
+// ════════════════════════════════════════════════════════════
+function draw() {
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  // background floor
+  drawFloor(W,H);
+
+  // screen flash (bankruptcy)
+  if (screenFlash) {
+    ctx.fillStyle=`rgba(122,30,18,${screenFlash.life*.18})`;
+    ctx.fillRect(0,0,W,H);
+    screenFlash.life-=screenFlash.fade;
+    if (screenFlash.life<=0) screenFlash=null;
+  }
+
+  // wealth zone hint (very subtle)
+  const zg=ctx.createLinearGradient(0,0,0,H);
+  zg.addColorStop(0,'rgba(168,132,44,0.025)');
+  zg.addColorStop(.5,'rgba(0,0,0,0)');
+  zg.addColorStop(1,'rgba(27,58,92,0.03)');
+  ctx.fillStyle=zg; ctx.fillRect(0,0,W,H);
+
+  // loan threads (dashed)
+  ctx.save(); ctx.setLineDash([3,5]);
+  for (const d of debtLinks) {
+    const a=agents.find(x=>x.id===d.debtor), b=agents.find(x=>x.id===d.creditor);
+    if (!a||!b||!a.alive||!b.alive) continue;
+    const mx=(a.x+b.x)/2-(b.y-a.y)*.22, my=(a.y+b.y)/2+(b.x-a.x)*.22;
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.quadraticCurveTo(mx,my,b.x,b.y);
+    ctx.strokeStyle='rgba(168,132,44,0.28)'; ctx.lineWidth=.8; ctx.stroke();
+  }
+  ctx.restore(); ctx.setLineDash([]);
+
+  // trade arcs
+  ctx.save();
+  for (let i=arcs.length-1;i>=0;i--) {
+    const arc=arcs[i];
+    const mx=(arc.ax+arc.bx)/2-(arc.by-arc.ay)*.25, my=(arc.ay+arc.by)/2+(arc.bx-arc.ax)*.25;
+    ctx.beginPath(); ctx.moveTo(arc.ax,arc.ay); ctx.quadraticCurveTo(mx,my,arc.bx,arc.by);
+    ctx.strokeStyle=arc.color; ctx.globalAlpha=arc.life*.75; ctx.lineWidth=1.2; ctx.stroke();
+    arc.life-=arc.fade;
+    if (arc.life<=0) arcs.splice(i,1);
+  }
+  ctx.restore(); ctx.globalAlpha=1;
+
+  // death rings
+  for (let i=deaths.length-1;i>=0;i--) {
+    const d=deaths[i];
+    ctx.beginPath(); ctx.arc(d.x,d.y,d.r*(1+(1-d.life)*2),0,Math.PI*2);
+    ctx.strokeStyle='#7A1E12'; ctx.globalAlpha=d.life*.5; ctx.lineWidth=1.2; ctx.stroke();
+    d.life-=d.fade;
+    if (d.life<=0) deaths.splice(i,1);
+  }
+  ctx.globalAlpha=1;
+
+  // glow halos under coins
+  drawCoinsGlow(agents.filter(a=>a.alive));
+
+  // pulse halos
+  for (const a of agents.filter(a=>a.alive)) {
+    const age=simTick-a.pulseAt;
+    if (age>14) continue;
+    const t=age/14, r=coinRadius(a);
+    const gr=ctx.createRadialGradient(a.x,a.y,r*.6,a.x,a.y,r*(1+t*1.4));
+    gr.addColorStop(0,`rgba(168,132,44,${(1-t)*.35})`);
+    gr.addColorStop(1,'rgba(168,132,44,0)');
+    ctx.beginPath(); ctx.arc(a.x,a.y,r*(1+t*1.4),0,Math.PI*2);
+    ctx.fillStyle=gr; ctx.fill();
+  }
+
+  // coins
+  for (const a of agents.filter(a=>a.alive)) drawCoin(a);
+
+  // particles
+  for (let i=particles.length-1;i>=0;i--) {
+    const p=particles[i];
+    p.x+=p.vx; p.y+=p.vy; p.vy*=.95; p.vx*=.97; p.life-=p.fade;
+    if (p.life<=0){particles.splice(i,1);continue;}
+    ctx.globalAlpha=p.life;
+    ctx.fillStyle=p.color;
+    ctx.font=`${p.size}px 'JetBrains Mono',monospace`;
+    ctx.textAlign='left';
+    ctx.fillText(p.text,p.x,p.y);
+  }
+  ctx.globalAlpha=1;
+
+  // chronicle overlay on canvas (typewriter)
+  tickDispatch();
+  if (dispatch && dispatch.alpha>0) {
+    const cx=W*.5, cy=H*.5;
+    ctx.save();
+    ctx.globalAlpha=dispatch.alpha*.88;
+    const tw=Math.min(580,W*.7);
+    ctx.fillStyle='rgba(13,32,53,0.78)';
+    roundRect(ctx,cx-tw/2-24,cy-28,tw+48,56,4);
+    ctx.fill();
+    ctx.strokeStyle='rgba(237,232,223,0.06)';
+    ctx.lineWidth=1; ctx.stroke();
+    ctx.fillStyle='rgba(237,232,223,0.9)';
+    ctx.font=`italic ${Math.min(17,W*.022)}px 'Cormorant Garamond',serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    // wrap text
+    wrapText(ctx, dispatch.typed+(dispatch.phase==='type'?'▮':''), cx, cy, tw, Math.min(17,W*.022)*1.5);
+    ctx.restore();
+  }
+
+  requestAnimationFrame(draw);
+}
+
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();}
+
+function wrapText(ctx,text,cx,cy,maxW,lineH){
+  const words=text.split(' '); let line=''; const lines=[];
+  for (const w of words){const t=line?line+' '+w:w;if(ctx.measureText(t).width>maxW&&line){lines.push(line);line=w;}else line=t;}
+  if(line)lines.push(line);
+  const startY=cy-(lines.length-1)*lineH/2;
+  for(let i=0;i<lines.length;i++) ctx.fillText(lines[i],cx,startY+i*lineH);
+}
+
+// ════════════════════════════════════════════════════════════
+//  TOOLTIP
+// ════════════════════════════════════════════════════════════
+const tip=document.getElementById('tip');
+canvas.addEventListener('mousemove',e=>{
+  const rect=canvas.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  const a=agents.find(a=>{if(!a.alive)return;const dx=a.x-mx,dy=a.y-my;return Math.sqrt(dx*dx+dy*dy)<coinRadius(a)+4;});
+  if(a){
+    const prod=Math.min(CFG.maxProductivityMult,1+a.memory*CFG.memoryProductivity);
+    tip.innerHTML=`<b>${a.id}</b><br>wallet &nbsp;α${a.wallet.toFixed(1)}<br>memory &nbsp;${a.memory.toFixed(1)}<br>compute ${a.compute.toFixed(1)}<br>debt &nbsp;&nbsp;α${a.debtAmt.toFixed(1)}<br>prod &nbsp;&nbsp;×${prod.toFixed(2)}<br>age &nbsp;&nbsp;&nbsp;${a.age} ticks`;
+    tip.style.display='block'; tip.style.left=(mx+14)+'px'; tip.style.top=(my-10)+'px';
+  } else tip.style.display='none';
+});
+canvas.addEventListener('mouseleave',()=>tip.style.display='none');
+
+// ════════════════════════════════════════════════════════════
+//  BOOT
+// ════════════════════════════════════════════════════════════
+resize();
+const W0=canvas.width, H0=canvas.height;
+for (let i=0;i<CFG.initialAgents;i++) agents.push(makeAgent(i,W0,H0));
+
+// local sim timer (used only when API unavailable)
+setInterval(()=>simStep(), 800);
+// physics sub-steps
+setInterval(()=>physics(), 35);
+
+// try API
+setTimeout(connectAPI, 300);
+
+requestAnimationFrame(draw);
+
+// initial chronicle
+setTimeout(()=>{
+  dispatch={text:'"the colony is initializing. 50 agents. one seed. no script."',typed:'',idx:0,age:0,phase:'type',alpha:1};
+  document.getElementById('ch-text').textContent='';
+}, 600);
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+{
+  "name": "agora-os",
+  "version": "0.1.0",
+  "description": "AGORA OS — an operating system that is an economy. Autonomous AI agents earn, trade, lend, and go bankrupt; drama emerges from rules.",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "tsx api/server.ts",
+    "sim": "tsx scripts/run.ts",
+    "dev": "TICK_MS=800 tsx api/server.ts",
+    "seed": "tsx scripts/seed.ts",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "economy",
+    "simulation",
+    "agents",
+    "emergence"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.1.2",
+      "onFail": "download"
+    }
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.1.0",
+    "@types/pg": "^8.20.0",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.109.1",
+    "express": "^5.2.1",
+    "pg": "^8.22.0",
+    "twitter-api-v2": "^1.29.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}

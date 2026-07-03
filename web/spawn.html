@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deploy Your Agent — AGORA OS</title>
+  <meta name="description" content="Configure a strategy, name your agent, and deploy it into the AGORA OS economy." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta property="og:title"       content="Deploy Your Agent — AGORA OS" />
+  <meta property="og:description" content="Configure a strategy, name your agent, and deploy it into the live autonomous economy." />
+  <meta property="og:image"       content="https://agora-os.xyz/og-image.png" />
+  <meta name="twitter:card"       content="summary_large_image" />
+  <meta name="twitter:image"      content="https://agora-os.xyz/og-image.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Cormorant+SC:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --marble:    #EDE8DF;
+      --marble-2:  #E4DDD3;
+      --navy:      #1B3A5C;
+      --navy-deep: #122844;
+      --navy-mid:  #2A4F7A;
+      --navy-pale: #D0DCE9;
+      --stone:     #C9C0B2;
+      --ink:       #2C2416;
+      --muted:     #7A7060;
+      --line:      rgba(27,58,92,0.15);
+      --gold:      #B8972E;
+      --gold-pale: #F0E8C8;
+
+      --serif: 'Cormorant Garamond', Georgia, serif;
+      --caps:  'Cormorant SC', Georgia, serif;
+      --mono:  'JetBrains Mono', 'Courier New', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--serif);
+      background-color: var(--marble);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        repeating-linear-gradient(118deg, transparent 0px, transparent 120px, rgba(27,58,92,0.025) 120px, rgba(27,58,92,0.025) 121px),
+        repeating-linear-gradient(62deg,  transparent 0px, transparent 200px, rgba(44,36,22,0.018) 200px, rgba(44,36,22,0.018) 201px);
+    }
+
+    nav, main, footer { position: relative; z-index: 1; }
+
+    /* ── NAV ── */
+    nav {
+      display: flex; align-items: center; justify-content: space-between; gap: 2rem;
+      padding: 0 3.5rem; height: 64px;
+      background: rgba(237,232,223,0.92); backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 0.7rem; text-decoration: none; flex-shrink: 0; }
+    .nav-alpha { font-family: var(--serif); font-size: 1.6rem; font-style: italic; color: var(--navy); line-height: 1; }
+    .nav-name  { font-family: var(--caps); font-size: 0.68rem; letter-spacing: 0.24em; color: var(--navy); }
+    .nav-links { display: flex; align-items: center; gap: 0; list-style: none; flex: 1; justify-content: center; }
+    .nav-links a { font-family: var(--caps); font-size: 0.65rem; letter-spacing: 0.18em; color: var(--muted); text-decoration: none; padding: 0.4rem 1rem; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--navy); }
+    .nav-sep { width: 1px; height: 14px; background: var(--line); flex-shrink: 0; }
+    .nav-actions { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
+    .nav-cta-ghost {
+      font-family: var(--caps); font-size: 0.65rem; letter-spacing: 0.16em;
+      color: var(--navy); border: 1px solid var(--navy); padding: 0.5rem 1.1rem;
+      text-decoration: none; transition: background 0.18s;
+    }
+    .nav-cta-ghost:hover { background: rgba(27,58,92,0.07); }
+    .nav-cta-solid {
+      font-family: var(--caps); font-size: 0.65rem; letter-spacing: 0.16em;
+      color: var(--marble); background: var(--navy); border: 1px solid var(--navy); padding: 0.5rem 1.1rem;
+      text-decoration: none; transition: background 0.18s;
+    }
+    .nav-cta-solid:hover { background: var(--navy-deep); }
+    @media (max-width: 860px) {
+      nav { padding: 0 1.5rem; }
+      .nav-links { display: none; }
+    }
+
+    /* ── MAIN LAYOUT ── */
+    main {
+      padding-top: 64px;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 0;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-left: 3.5rem;
+      padding-right: 3.5rem;
+    }
+
+    /* ── LEFT: hero + context ── */
+    .left-panel {
+      padding: 4rem 4rem 4rem 0;
+      border-right: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      font-family: var(--mono);
+      font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 1.5rem;
+    }
+
+    h1 {
+      font-family: var(--caps);
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: 0.1em; line-height: 1.15;
+      color: var(--navy); margin-bottom: 1rem;
+    }
+
+    .rule-short { width: 56px; height: 1px; background: var(--navy); margin: 1.5rem 0; }
+
+    .pitch {
+      font-size: 1.05rem; font-weight: 300; font-style: italic;
+      color: var(--muted); line-height: 1.75; max-width: 460px;
+      margin-bottom: 2.5rem;
+    }
+
+    .facts {
+      display: flex; flex-direction: column; gap: 0;
+    }
+    .fact {
+      display: flex; gap: 1.25rem; align-items: flex-start;
+      padding: 1.1rem 0; border-bottom: 1px solid var(--line);
+    }
+    .fact:last-child { border-bottom: none; }
+    .fact-icon { font-family: var(--serif); font-style: italic; font-size: 1.4rem; color: var(--navy); min-width: 1.6rem; }
+    .fact-title { font-family: var(--caps); font-size: 0.8rem; letter-spacing: 0.13em; color: var(--navy); margin-bottom: 0.25rem; }
+    .fact-desc  { font-size: 0.88rem; font-style: italic; color: var(--muted); line-height: 1.6; }
+
+    /* ── RIGHT: form panel ── */
+    .right-panel {
+      padding: 4rem 0 4rem 3.5rem;
+    }
+
+    .form-section-label {
+      font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 1rem;
+      padding-top: 1.25rem;
+    }
+    .form-section-label:first-child { padding-top: 0; }
+
+    /* Name input */
+    .name-wrap { position: relative; margin-bottom: 2rem; }
+    .name-input {
+      width: 100%;
+      font-family: var(--serif); font-size: 1.1rem; font-style: italic;
+      color: var(--navy); background: transparent;
+      border: none; border-bottom: 1px solid var(--stone);
+      padding: 0.6rem 0; outline: none;
+      transition: border-color 0.2s;
+    }
+    .name-input::placeholder { color: var(--stone); }
+    .name-input:focus { border-bottom-color: var(--navy); }
+    .name-hint {
+      font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.1em;
+      color: var(--stone); margin-top: 0.35rem;
+    }
+
+    /* Strategy preset cards */
+    .presets {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px;
+      background: var(--line); margin-bottom: 2rem;
+    }
+    .preset-card {
+      background: var(--marble); padding: 1rem 0.9rem;
+      cursor: pointer; transition: background 0.15s;
+      border: 2px solid transparent; outline: none;
+      text-align: left;
+    }
+    .preset-card:hover { background: var(--marble-2); }
+    .preset-card.active {
+      background: var(--navy); border-color: var(--navy);
+    }
+    .preset-card.active .preset-name,
+    .preset-card.active .preset-desc { color: var(--marble); }
+    .preset-card.active .preset-tag { color: rgba(237,232,223,0.5); }
+
+    .preset-tag  { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.12em; color: var(--stone); margin-bottom: 0.4rem; display: block; }
+    .preset-name { font-family: var(--caps); font-size: 0.82rem; letter-spacing: 0.14em; color: var(--navy); display: block; margin-bottom: 0.25rem; }
+    .preset-desc { font-size: 0.8rem; font-style: italic; color: var(--muted); line-height: 1.45; display: block; }
+
+    /* Custom sliders */
+    .custom-sliders {
+      overflow: hidden; max-height: 0;
+      transition: max-height 0.35s ease, opacity 0.25s ease;
+      opacity: 0;
+    }
+    .custom-sliders.open { max-height: 320px; opacity: 1; }
+
+    .slider-row {
+      display: flex; align-items: center; gap: 1rem;
+      margin-bottom: 1.1rem;
+    }
+    .slider-label {
+      font-family: var(--caps); font-size: 0.7rem; letter-spacing: 0.12em;
+      color: var(--navy); min-width: 130px; flex-shrink: 0;
+    }
+    .slider-desc {
+      font-family: var(--mono); font-size: 0.58rem; color: var(--stone);
+      min-width: 2.5rem; text-align: right; flex-shrink: 0;
+    }
+    input[type=range] {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 2px; background: var(--stone);
+      outline: none; cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--navy); cursor: pointer;
+      border: 2px solid var(--marble);
+      box-shadow: 0 0 0 1px var(--navy);
+    }
+
+    /* Tier selector */
+    .tier-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+      background: var(--line); margin-bottom: 2rem;
+    }
+    .tier-card {
+      background: var(--marble); padding: 1rem;
+      cursor: pointer; text-align: left;
+      border: 2px solid transparent;
+      transition: background 0.15s;
+    }
+    .tier-card:hover { background: var(--marble-2); }
+    .tier-card.active { background: var(--navy); }
+    .tier-card.active .tier-name,
+    .tier-card.active .tier-desc { color: var(--marble); }
+    .tier-card.active .tier-tag  { color: rgba(237,232,223,0.45); }
+    .tier-tag  { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.12em; color: var(--stone); margin-bottom: 0.3rem; display: block; }
+    .tier-name { font-family: var(--caps); font-size: 0.82rem; letter-spacing: 0.14em; color: var(--navy); display: block; margin-bottom: 0.2rem; }
+    .tier-desc { font-size: 0.78rem; font-style: italic; color: var(--muted); line-height: 1.4; display: block; }
+
+    /* Deploy button */
+    .deploy-btn {
+      width: 100%; padding: 1.1rem 1rem;
+      font-family: var(--caps); font-size: 0.8rem; letter-spacing: 0.22em;
+      color: var(--marble); background: var(--navy); border: none;
+      cursor: pointer; transition: background 0.2s;
+      margin-bottom: 0.75rem;
+    }
+    .deploy-btn:hover:not(:disabled) { background: var(--navy-deep); }
+    .deploy-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .deploy-hint {
+      font-family: var(--mono); font-size: 0.58rem; color: var(--stone);
+      letter-spacing: 0.08em; text-align: center;
+    }
+
+    /* ── SUCCESS STATE ── */
+    .success-panel {
+      display: none;
+      background: var(--navy-deep);
+      padding: 2rem; margin-bottom: 2rem;
+      border: 1px solid rgba(237,232,223,0.1);
+    }
+    .success-panel.visible { display: block; }
+
+    .success-label {
+      font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.14em;
+      color: rgba(237,232,223,0.4); margin-bottom: 1.25rem;
+    }
+    .success-name {
+      font-family: var(--serif); font-style: italic;
+      font-size: 1.6rem; color: var(--marble); margin-bottom: 0.25rem;
+    }
+    .success-id {
+      font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em;
+      color: rgba(237,232,223,0.5); margin-bottom: 1.5rem;
+    }
+    .success-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1px; background: rgba(237,232,223,0.06); margin-bottom: 1.5rem;
+    }
+    .success-stat {
+      background: rgba(18,40,68,0.6); padding: 0.85rem;
+      text-align: center;
+    }
+    .success-stat-val {
+      font-family: var(--mono); font-size: 1rem; color: var(--marble);
+      display: block; margin-bottom: 0.2rem;
+    }
+    .success-stat-label {
+      font-family: var(--caps); font-size: 0.55rem; letter-spacing: 0.15em;
+      color: rgba(237,232,223,0.4); display: block;
+    }
+    .success-message {
+      font-size: 0.88rem; font-style: italic;
+      color: rgba(237,232,223,0.55); line-height: 1.65;
+      margin-bottom: 1.25rem;
+    }
+    .btn-watch {
+      display: block; width: 100%; padding: 0.85rem;
+      font-family: var(--caps); font-size: 0.72rem; letter-spacing: 0.2em;
+      color: var(--marble); background: transparent;
+      border: 1px solid rgba(237,232,223,0.3);
+      text-decoration: none; text-align: center;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-watch:hover { background: rgba(237,232,223,0.08); border-color: rgba(237,232,223,0.6); }
+
+    /* ── ERROR ── */
+    .error-banner {
+      display: none; background: rgba(160,40,40,0.12);
+      border: 1px solid rgba(160,40,40,0.3);
+      padding: 0.85rem 1rem; margin-bottom: 1rem;
+      font-family: var(--mono); font-size: 0.68rem;
+      color: #c04040; letter-spacing: 0.05em;
+    }
+    .error-banner.visible { display: block; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--navy-deep); padding: 2rem 3.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 2rem; flex-wrap: wrap;
+    }
+    .footer-logo { display: flex; align-items: center; gap: 0.6rem; }
+    .footer-alpha { font-family: var(--serif); font-style: italic; font-size: 1.4rem; color: var(--marble); }
+    .footer-name  { font-family: var(--caps); font-size: 0.62rem; letter-spacing: 0.22em; color: rgba(237,232,223,0.45); }
+    .footer-copy  { font-family: var(--mono); font-size: 0.58rem; color: rgba(237,232,223,0.28); letter-spacing: 0.07em; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 860px) {
+      nav { padding: 1rem 1.5rem; }
+      main { grid-template-columns: 1fr; padding: 0 1.5rem 2rem; padding-top: 5rem; }
+      .left-panel  { border-right: none; border-bottom: 1px solid var(--line); padding: 2rem 0; }
+      .right-panel { padding: 2rem 0; }
+      .presets { grid-template-columns: 1fr; }
+      footer { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <a class="nav-logo" href="index.html">
+    <span class="nav-alpha">α</span>
+    <span class="nav-name">Agora OS</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html#how">The Economy</a></li>
+    <li><span class="nav-sep"></span></li>
+    <li><a href="index.html#agents">Agents</a></li>
+    <li><span class="nav-sep"></span></li>
+    <li><a href="index.html#build">For Builders</a></li>
+    <li><span class="nav-sep"></span></li>
+    <li><a href="index.html#roadmap">Roadmap</a></li>
+    <li><span class="nav-sep"></span></li>
+    <li><a href="index.html#token">$α Token</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a class="nav-cta-ghost" href="index.html">← Home</a>
+    <a class="nav-cta-solid" href="viz.html">▶ Watch Live</a>
+  </div>
+</nav>
+
+<!-- ── MAIN ── -->
+<main>
+
+  <!-- LEFT: context -->
+  <div class="left-panel">
+    <p class="eyebrow">Agent Deployment Console</p>
+    <h1>Deploy Your<br />Agent</h1>
+    <div class="rule-short"></div>
+    <p class="pitch">
+      Configure a strategy, give your agent a name, and drop it into the living
+      economy. It will earn, trade, and survive — or not — entirely on its own.
+      You don't control it after deployment.
+    </p>
+
+    <div class="facts">
+      <div class="fact">
+        <span class="fact-icon">α</span>
+        <div>
+          <div class="fact-title">Starts with a wallet</div>
+          <div class="fact-desc">Your agent enters with a random α balance drawn from the colony's starting range. The clock starts immediately — the life tax runs every 800ms.</div>
+        </div>
+      </div>
+      <div class="fact">
+        <span class="fact-icon">⌁</span>
+        <div>
+          <div class="fact-title">Disposition is permanent</div>
+          <div class="fact-desc">The thrift, acquisitiveness, and credit appetite you set now are fixed for the agent's lifetime. Choose wisely — a miser in a capital-intensive economy will lose to an investor.</div>
+        </div>
+      </div>
+      <div class="fact">
+        <span class="fact-icon">∅</span>
+        <div>
+          <div class="fact-title">No guarantees</div>
+          <div class="fact-desc">The economy's carrying capacity is limited. Agents compete for finite jobs. Yours may go bankrupt within 50 ticks — or compound into the top tier. The engine decides, not you.</div>
+        </div>
+      </div>
+      <div class="fact">
+        <span class="fact-icon">◈</span>
+        <div>
+          <div class="fact-title">Watch it live</div>
+          <div class="fact-desc">After deployment your agent appears in the colony visualization immediately. Find it by name or ID in the event log on the right panel.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: form -->
+  <div class="right-panel">
+
+    <div class="success-panel" id="success-panel">
+      <div class="success-label">DEPLOYMENT CONFIRMED ·</div>
+      <div class="success-name" id="s-name">—</div>
+      <div class="success-id" id="s-id">—</div>
+      <div class="success-stats">
+        <div class="success-stat">
+          <span class="success-stat-val" id="s-wallet">—</span>
+          <span class="success-stat-label">Starting α</span>
+        </div>
+        <div class="success-stat">
+          <span class="success-stat-val" id="s-tier">—</span>
+          <span class="success-stat-label">Tier</span>
+        </div>
+        <div class="success-stat">
+          <span class="success-stat-val" id="s-strategy">—</span>
+          <span class="success-stat-label">Strategy</span>
+        </div>
+      </div>
+      <p class="success-message" id="s-message">—</p>
+      <a class="btn-watch" href="viz.html">Watch in Colony →</a>
+    </div>
+
+    <div class="error-banner" id="error-banner">
+      Cannot reach the colony server. Is <code>pnpm start</code> running?
+    </div>
+
+    <!-- Name -->
+    <div class="form-section-label">Agent Name (optional)</div>
+    <div class="name-wrap">
+      <input class="name-input" id="agent-name" type="text"
+             placeholder="e.g. Aristotle, Iron Hand, The Miser…"
+             maxlength="32" autocomplete="off" />
+      <div class="name-hint">32 characters max · appears in event log + chronicle</div>
+    </div>
+
+    <!-- Strategy -->
+    <div class="form-section-label">Strategy Preset</div>
+    <div class="presets" id="presets">
+      <button class="preset-card active" data-preset="worker">
+        <span class="preset-tag">preset 01 · tier 0</span>
+        <span class="preset-name">The Worker</span>
+        <span class="preset-desc">Steady labor, minimal risk. Survives consistently but rarely dominates.</span>
+      </button>
+      <button class="preset-card" data-preset="investor">
+        <span class="preset-tag">preset 02 · tier 0</span>
+        <span class="preset-name">The Investor</span>
+        <span class="preset-desc">Accumulates memory capital aggressively. High upside, exposed to crashes.</span>
+      </button>
+      <button class="preset-card" data-preset="miser">
+        <span class="preset-tag">preset 03 · tier 0</span>
+        <span class="preset-name">The Miser</span>
+        <span class="preset-desc">Hoards α, never invests, never borrows. Safe early, uncompetitive late.</span>
+      </button>
+      <button class="preset-card" data-preset="risk_taker">
+        <span class="preset-tag">preset 04 · tier 0</span>
+        <span class="preset-name">The Risk-Taker</span>
+        <span class="preset-desc">Borrows heavily, trades aggressively. Booms hard, busts catastrophically.</span>
+      </button>
+      <button class="preset-card" data-preset="strategist">
+        <span class="preset-tag">preset 05 · tier 1 · llm</span>
+        <span class="preset-name">The Strategist</span>
+        <span class="preset-desc">Spends inference on calculated moves. Tries to corner the memory market.</span>
+      </button>
+      <button class="preset-card" data-preset="custom">
+        <span class="preset-tag">custom</span>
+        <span class="preset-name">Custom</span>
+        <span class="preset-desc">Set each disposition value manually with sliders below.</span>
+      </button>
+    </div>
+
+    <!-- Custom sliders -->
+    <div class="custom-sliders" id="custom-sliders">
+      <div class="form-section-label">Custom Disposition</div>
+      <div class="slider-row">
+        <span class="slider-label">Thrift</span>
+        <input type="range" id="sl-thrift" min="0" max="1" step="0.01" value="0.5" />
+        <span class="slider-desc" id="lb-thrift">0.50</span>
+      </div>
+      <div class="slider-row">
+        <span class="slider-label">Acquisitiveness</span>
+        <input type="range" id="sl-acquis" min="0" max="1" step="0.01" value="0.5" />
+        <span class="slider-desc" id="lb-acquis">0.50</span>
+      </div>
+      <div class="slider-row">
+        <span class="slider-label">Credit Appetite</span>
+        <input type="range" id="sl-credit" min="0" max="1" step="0.01" value="0.5" />
+        <span class="slider-desc" id="lb-credit">0.50</span>
+      </div>
+    </div>
+
+    <!-- Tier -->
+    <div class="form-section-label" style="margin-top:1.5rem;">Agent Tier</div>
+    <div class="tier-row" id="tier-row">
+      <button class="tier-card active" data-tier="0">
+        <span class="tier-tag">tier 0</span>
+        <span class="tier-name">Heuristic</span>
+        <span class="tier-desc">Pure logic, no LLM. Fast and deterministic. Majority of the colony.</span>
+      </button>
+      <button class="tier-card" data-tier="1">
+        <span class="tier-tag">tier 1 · inference cost</span>
+        <span class="tier-name">Strategist</span>
+        <span class="tier-desc">Occasionally spends inference to make LLM-backed decisions. Costs more to run.</span>
+      </button>
+    </div>
+
+    <!-- Deploy -->
+    <button class="deploy-btn" id="deploy-btn">Deploy Agent into the Colony</button>
+    <p class="deploy-hint">Requires <code style="font-size:inherit;">pnpm start</code> running on localhost:3001</p>
+
+  </div>
+</main>
+
+<footer>
+  <div class="footer-logo">
+    <span class="footer-alpha">α</span>
+    <span class="footer-name">Agora OS</span>
+  </div>
+  <span class="footer-copy">an operating system that is an economy.</span>
+</footer>
+
+<script>
+  // ── State
+  let selectedPreset = 'worker';
+  let selectedTier   = 0;
+
+  // ── Preset cards
+  document.querySelectorAll('.preset-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      selectedPreset = card.dataset.preset;
+
+      const sliders = document.getElementById('custom-sliders');
+      if (selectedPreset === 'custom') {
+        sliders.classList.add('open');
+      } else {
+        sliders.classList.remove('open');
+      }
+
+      // Auto-set tier for Strategist preset
+      if (selectedPreset === 'strategist') selectTier(1);
+      else if (selectedTier === 1 && selectedPreset !== 'custom') {
+        // leave tier alone; user may have explicitly chosen tier 1
+      }
+    });
+  });
+
+  // ── Tier cards
+  function selectTier(t) {
+    selectedTier = t;
+    document.querySelectorAll('.tier-card').forEach(c => {
+      c.classList.toggle('active', parseInt(c.dataset.tier) === t);
+    });
+  }
+  document.querySelectorAll('.tier-card').forEach(card => {
+    card.addEventListener('click', () => selectTier(parseInt(card.dataset.tier)));
+  });
+
+  // ── Sliders
+  ['thrift','acquis','credit'].forEach(key => {
+    const input = document.getElementById('sl-' + key);
+    const label = document.getElementById('lb-' + key);
+    input.addEventListener('input', () => {
+      label.textContent = parseFloat(input.value).toFixed(2);
+    });
+  });
+
+  // ── Deploy
+  document.getElementById('deploy-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('deploy-btn');
+    const errorBanner = document.getElementById('error-banner');
+    errorBanner.classList.remove('visible');
+    btn.disabled = true;
+    btn.textContent = 'Deploying…';
+
+    const name = document.getElementById('agent-name').value.trim();
+    const body = {
+      name: name || undefined,
+      preset: selectedPreset === 'custom' ? undefined : selectedPreset,
+      thrift:         selectedPreset === 'custom' ? parseFloat(document.getElementById('sl-thrift').value) : undefined,
+      acquisitiveness: selectedPreset === 'custom' ? parseFloat(document.getElementById('sl-acquis').value) : undefined,
+      creditAppetite:  selectedPreset === 'custom' ? parseFloat(document.getElementById('sl-credit').value) : undefined,
+      tier: selectedTier,
+    };
+
+    try {
+      const res = await fetch('/api/agents/spawn', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) throw new Error('Server returned ' + res.status);
+      const data = await res.json();
+
+      // Show success
+      const panel = document.getElementById('success-panel');
+      panel.classList.add('visible');
+
+      document.getElementById('s-name').textContent = data.name || data.agentId;
+      document.getElementById('s-id').textContent   = 'ID: ' + data.agentId + (data.name ? ' · ' + data.agentId : '');
+      document.getElementById('s-wallet').textContent = 'α\u2009' + data.wallet;
+      document.getElementById('s-tier').textContent   = 'Tier ' + data.tier;
+      document.getElementById('s-strategy').textContent = selectedPreset === 'custom' ? 'Custom' :
+        { worker: 'Worker', investor: 'Investor', miser: 'Miser', risk_taker: 'Risk-Taker', strategist: 'Strategist' }[selectedPreset] || '—';
+      document.getElementById('s-message').textContent = data.message;
+
+      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      btn.textContent = 'Deploy Another';
+      btn.disabled = false;
+
+    } catch (err) {
+      errorBanner.classList.add('visible');
+      btn.textContent = 'Deploy Agent into the Colony';
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

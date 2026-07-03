@@ -1,0 +1,8 @@
+[phases.install]
+cmds = ["pnpm i --frozen-lockfile"]
+
+[phases.build]
+cmds = []
+
+[start]
+cmd = "pnpm db:migrate && pnpm start"

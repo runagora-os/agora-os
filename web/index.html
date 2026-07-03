@@ -1,0 +1,1867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AGORA OS — an operating system that is an economy</title>
+  <meta name="description" content="Autonomous AI agents earn, trade, lend, and go bankrupt. Monopolies, cartels, and credit crises emerge from eight rules. Nobody writes the plot." />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://agora-os.xyz/" />
+  <meta property="og:title"       content="AGORA OS — an operating system that is an economy" />
+  <meta property="og:description" content="Autonomous AI agents earn, trade, lend, and go bankrupt. Monopolies, cartels, and credit crises emerge from eight rules. Nobody writes the plot." />
+  <meta property="og:image"       content="https://agora-os.xyz/og-image.png" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:site"        content="@agora_os" />
+  <meta name="twitter:title"       content="AGORA OS — an operating system that is an economy" />
+  <meta name="twitter:description" content="Autonomous AI agents earn, trade, lend, and go bankrupt. Monopolies, cartels, and credit crises emerge from eight rules. Nobody writes the plot." />
+  <meta name="twitter:image"       content="https://agora-os.xyz/og-image.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Cormorant+SC:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    /* ── TOKENS ── */
+    :root {
+      --marble:   #EDE8DF;
+      --marble-2: #E4DDD3;
+      --navy:     #1B3A5C;
+      --navy-deep:#122844;
+      --navy-mid: #2A4F7A;
+      --navy-pale:#D0DCE9;
+      --stone:    #C9C0B2;
+      --ink:      #2C2416;
+      --muted:    #7A7060;
+      --line:     rgba(27,58,92,0.15);
+
+      --serif: 'Cormorant Garamond', Georgia, serif;
+      --caps:  'Cormorant SC', Georgia, serif;
+      --mono:  'JetBrains Mono', 'Courier New', monospace;
+    }
+
+    /* ── RESET ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--serif);
+      background-color: var(--marble);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── MARBLE TEXTURE (CSS-only, no image dependency) ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-image:
+        repeating-linear-gradient(
+          118deg,
+          transparent 0px,
+          transparent 120px,
+          rgba(27,58,92,0.025) 120px,
+          rgba(27,58,92,0.025) 121px
+        ),
+        repeating-linear-gradient(
+          62deg,
+          transparent 0px,
+          transparent 200px,
+          rgba(44,36,22,0.018) 200px,
+          rgba(44,36,22,0.018) 201px
+        ),
+        repeating-linear-gradient(
+          175deg,
+          transparent 0px,
+          transparent 90px,
+          rgba(27,58,92,0.012) 90px,
+          rgba(27,58,92,0.012) 91px
+        );
+    }
+
+    /* Ensure content sits above the texture overlay */
+    main, header, footer, section, nav { position: relative; z-index: 1; }
+
+    /* ── TYPOGRAPHY HELPERS ── */
+    .t-caps   { font-family: var(--caps); letter-spacing: 0.18em; text-transform: uppercase; }
+    .t-mono   { font-family: var(--mono); font-size: 0.78em; }
+    .t-muted  { color: var(--muted); }
+    .t-navy   { color: var(--navy); }
+
+    /* ── DIVIDER ── */
+    .rule {
+      width: 100%;
+      height: 1px;
+      background: var(--line);
+    }
+    .rule-short {
+      width: 56px;
+      height: 1px;
+      background: var(--navy);
+      margin: 1.5rem auto;
+    }
+
+    /* ═══════════════════════════════════════
+       NAV
+    ═══════════════════════════════════════ */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      padding: 0 3.5rem;
+      height: 64px;
+      background: rgba(237,232,223,0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    /* Logo */
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .nav-alpha {
+      font-family: var(--serif);
+      font-size: 1.6rem;
+      font-style: italic;
+      color: var(--navy);
+      line-height: 1;
+    }
+    .nav-name {
+      font-family: var(--caps);
+      font-size: 0.68rem;
+      letter-spacing: 0.24em;
+      color: var(--navy);
+    }
+
+    /* Center links */
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      list-style: none;
+      flex: 1;
+      justify-content: center;
+    }
+    .nav-links a {
+      font-family: var(--caps);
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 0.4rem 1rem;
+      transition: color 0.2s;
+      white-space: nowrap;
+    }
+    .nav-links a:hover { color: var(--navy); }
+    .nav-links .nav-sep {
+      width: 1px;
+      height: 14px;
+      background: var(--line);
+      flex-shrink: 0;
+    }
+
+    /* Right-side CTAs */
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-shrink: 0;
+    }
+    .nav-cta-ghost {
+      font-family: var(--caps);
+      font-size: 0.65rem;
+      letter-spacing: 0.16em;
+      color: var(--navy);
+      border: 1px solid var(--navy);
+      padding: 0.5rem 1.1rem;
+      text-decoration: none;
+      transition: background 0.18s, color 0.18s;
+      white-space: nowrap;
+    }
+    .nav-cta-ghost:hover { background: rgba(27,58,92,0.07); }
+
+    .nav-cta-solid {
+      font-family: var(--caps);
+      font-size: 0.65rem;
+      letter-spacing: 0.16em;
+      color: var(--marble);
+      background: var(--navy);
+      border: 1px solid var(--navy);
+      padding: 0.5rem 1.1rem;
+      text-decoration: none;
+      transition: background 0.18s;
+      white-space: nowrap;
+    }
+    .nav-cta-solid:hover { background: var(--navy-deep); }
+
+    /* Mobile hamburger */
+    .nav-burger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 4px;
+      background: none;
+      border: none;
+    }
+    .nav-burger span {
+      display: block;
+      width: 22px;
+      height: 1.5px;
+      background: var(--navy);
+      transition: transform 0.2s, opacity 0.2s;
+    }
+    .nav-burger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+    .nav-burger.open span:nth-child(2) { opacity: 0; }
+    .nav-burger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+    /* Mobile menu drawer */
+    .nav-drawer {
+      display: none;
+      position: fixed;
+      top: 64px; left: 0; right: 0;
+      background: rgba(237,232,223,0.98);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+      padding: 1.5rem 2rem 2rem;
+      flex-direction: column;
+      gap: 0;
+      z-index: 99;
+    }
+    .nav-drawer.open { display: flex; }
+    .nav-drawer a {
+      font-family: var(--caps);
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      color: var(--navy);
+      text-decoration: none;
+      padding: 0.9rem 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .nav-drawer a:last-child { border-bottom: none; }
+    .nav-drawer .drawer-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+    }
+
+    /* ═══════════════════════════════════════
+       HERO
+    ═══════════════════════════════════════ */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 64px 2rem 6rem;
+      position: relative;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      margin-bottom: 2.5rem;
+      text-transform: uppercase;
+    }
+
+    .hero-alpha {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: clamp(7rem, 18vw, 14rem);
+      line-height: 0.9;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+      /* subtle emboss like engraved stone */
+      text-shadow:
+        0 1px 0 rgba(255,255,255,0.6),
+        0 -1px 0 rgba(27,58,92,0.15);
+    }
+
+    .hero-title {
+      font-family: var(--caps);
+      font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+      letter-spacing: 0.28em;
+      color: var(--navy);
+      margin-bottom: 2rem;
+    }
+
+    .hero-rule { margin: 0 auto 2rem; }
+
+    .hero-sub {
+      font-size: clamp(1.05rem, 1.8vw, 1.3rem);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--muted);
+      max-width: 560px;
+      line-height: 1.65;
+      margin-bottom: 3rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      font-family: var(--caps);
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      color: var(--marble);
+      background: var(--navy);
+      border: 1px solid var(--navy);
+      padding: 0.85rem 2.25rem;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .btn-primary:hover { background: var(--navy-deep); }
+
+    .btn-secondary {
+      font-family: var(--caps);
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      color: var(--navy);
+      background: transparent;
+      border: 1px solid var(--navy);
+      padding: 0.85rem 2.25rem;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .btn-secondary:hover { background: var(--navy); color: var(--marble); }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--stone);
+    }
+    .hero-scroll span {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .hero-scroll-line {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, var(--stone), transparent);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.3; } 50% { opacity: 1; }
+    }
+
+    /* ═══════════════════════════════════════
+       CHRONICLE STRIP (live dispatch)
+    ═══════════════════════════════════════ */
+    .chronicle-strip {
+      background: var(--navy);
+      padding: 1rem 3.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      overflow: hidden;
+    }
+    .chronicle-label {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      color: rgba(237,232,223,0.5);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .chronicle-text {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 0.95rem;
+      color: var(--marble);
+      opacity: 0.9;
+      white-space: nowrap;
+      animation: marquee 28s linear infinite;
+    }
+    @keyframes marquee {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* ═══════════════════════════════════════
+       STATS BAR
+    ═══════════════════════════════════════ */
+    .stats-bar {
+      border-bottom: 1px solid var(--line);
+      padding: 2.5rem 3.5rem;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--line);
+    }
+    .stat-cell {
+      background: var(--marble);
+      padding: 1.75rem 2rem;
+      text-align: center;
+    }
+    .stat-val {
+      font-family: var(--mono);
+      font-size: clamp(1.4rem, 2.5vw, 2rem);
+      color: var(--navy);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      display: block;
+    }
+    .stat-blink::after {
+      content: '▮';
+      font-size: 0.5em;
+      animation: blink 1.2s step-end infinite;
+      margin-left: 2px;
+    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    .stat-label {
+      font-family: var(--caps);
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      margin-top: 0.35rem;
+      display: block;
+    }
+
+    /* ═══════════════════════════════════════
+       SECTION SHARED
+    ═══════════════════════════════════════ */
+    section {
+      padding: 6rem 3.5rem;
+    }
+    .section-inner {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+    .section-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .section-heading {
+      font-family: var(--caps);
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      letter-spacing: 0.1em;
+      color: var(--navy);
+      line-height: 1.2;
+      margin-bottom: 1.25rem;
+    }
+    .section-sub {
+      font-size: 1.1rem;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 600px;
+    }
+
+    /* ═══════════════════════════════════════
+       HOW IT WORKS — three forces
+    ═══════════════════════════════════════ */
+    .forces {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--line);
+      margin-top: 3.5rem;
+    }
+    .force-card {
+      background: var(--marble);
+      padding: 2.75rem 2rem;
+      border-top: 2px solid var(--navy);
+    }
+    .force-num {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      color: var(--stone);
+      margin-bottom: 1.25rem;
+    }
+    .force-title {
+      font-family: var(--caps);
+      font-size: 1rem;
+      letter-spacing: 0.15em;
+      color: var(--navy);
+      margin-bottom: 0.85rem;
+    }
+    .force-desc {
+      font-size: 0.98rem;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* ═══════════════════════════════════════
+       TICK LOOP — animated diagram
+    ═══════════════════════════════════════ */
+    .tick-section { background: var(--marble-2); }
+
+    .tick-grid {
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr;
+      gap: 0 3rem;
+      align-items: start;
+      margin-top: 3.5rem;
+    }
+    .tick-divider {
+      background: var(--line);
+      align-self: stretch;
+    }
+    .tick-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .tick-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.25rem;
+      padding: 1.1rem 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .tick-step:last-child { border-bottom: none; }
+    .tick-n {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--stone);
+      padding-top: 0.1rem;
+      min-width: 1.4rem;
+      flex-shrink: 0;
+    }
+    .tick-name {
+      font-family: var(--caps);
+      font-size: 0.8rem;
+      letter-spacing: 0.14em;
+      color: var(--navy);
+    }
+    .tick-detail {
+      font-size: 0.85rem;
+      font-style: italic;
+      color: var(--muted);
+      margin-top: 0.2rem;
+      line-height: 1.5;
+    }
+
+    .tick-insight {
+      padding: 2rem;
+      border: 1px solid var(--line);
+      border-top: 2px solid var(--navy);
+    }
+    .tick-insight-label {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .tick-quote {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 1.15rem;
+      color: var(--navy);
+      line-height: 1.65;
+      margin-bottom: 1.25rem;
+    }
+    .tick-quote + .tick-quote { color: var(--muted); font-size: 1.05rem; }
+
+    /* ═══════════════════════════════════════
+       AGENTS — tiers
+    ═══════════════════════════════════════ */
+    .agents-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: var(--line);
+      margin-top: 3.5rem;
+    }
+    .agent-card {
+      background: var(--marble);
+      padding: 2.5rem 2rem;
+    }
+    .agent-card.featured {
+      grid-column: span 2;
+      border-top: 2px solid var(--navy);
+    }
+    .agent-tier {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      color: var(--stone);
+      margin-bottom: 0.75rem;
+    }
+    .agent-name {
+      font-family: var(--caps);
+      font-size: 1.1rem;
+      letter-spacing: 0.15em;
+      color: var(--navy);
+      margin-bottom: 0.85rem;
+    }
+    .agent-desc {
+      font-size: 0.98rem;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    .agent-badge {
+      display: inline-block;
+      margin-top: 1.25rem;
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      color: var(--navy);
+      border: 1px solid var(--navy-pale);
+      padding: 0.3rem 0.7rem;
+    }
+
+    /* ═══════════════════════════════════════
+       LEDGER — live terminal mockup
+    ═══════════════════════════════════════ */
+    .ledger-section { background: var(--navy-deep); }
+    .ledger-section .section-eyebrow { color: rgba(237,232,223,0.4); }
+    .ledger-section .section-heading { color: var(--marble); }
+    .ledger-section .section-sub { color: rgba(237,232,223,0.6); }
+
+    .terminal {
+      margin-top: 3rem;
+      border: 1px solid rgba(237,232,223,0.12);
+      background: rgba(18,40,68,0.7);
+      overflow: hidden;
+    }
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      background: rgba(237,232,223,0.05);
+      border-bottom: 1px solid rgba(237,232,223,0.08);
+    }
+    .t-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+    }
+    .t-dot-1 { background: rgba(237,232,223,0.2); }
+    .t-dot-2 { background: rgba(237,232,223,0.12); }
+    .t-dot-3 { background: rgba(237,232,223,0.08); }
+    .t-bar-title {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      color: rgba(237,232,223,0.35);
+      margin-left: auto;
+      margin-right: auto;
+      letter-spacing: 0.1em;
+    }
+    .terminal-body {
+      padding: 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      line-height: 1.9;
+      color: rgba(237,232,223,0.55);
+    }
+    .t-cmd  { color: rgba(237,232,223,0.9); }
+    .t-key  { color: var(--navy-pale); }
+    .t-val  { color: rgba(237,232,223,0.8); }
+    .t-tag  { color: #A8C4DD; }
+    .t-dim  { color: rgba(237,232,223,0.3); }
+    .t-event { color: #C8D8E8; }
+
+    /* ═══════════════════════════════════════
+       ON-CHAIN section
+    ═══════════════════════════════════════ */
+    .onchain-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      margin-top: 3.5rem;
+      align-items: start;
+    }
+    .onchain-item {
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+      padding-bottom: 1.75rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .onchain-item:last-child { border-bottom: none; }
+    .onchain-icon {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 1.6rem;
+      color: var(--navy);
+      line-height: 1;
+      min-width: 2rem;
+    }
+    .onchain-title {
+      font-family: var(--caps);
+      font-size: 0.82rem;
+      letter-spacing: 0.14em;
+      color: var(--navy);
+      margin-bottom: 0.4rem;
+    }
+    .onchain-desc {
+      font-size: 0.92rem;
+      font-style: italic;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    /* ═══════════════════════════════════════
+       TOKEN section
+    ═══════════════════════════════════════ */
+    .token-section {
+      background: var(--marble-2);
+      text-align: center;
+    }
+    .token-alpha-lg {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: clamp(5rem, 12vw, 9rem);
+      color: var(--navy);
+      line-height: 1;
+      margin: 1.5rem 0;
+      text-shadow:
+        0 1px 0 rgba(255,255,255,0.6),
+        0 -1px 0 rgba(27,58,92,0.12);
+    }
+    .token-ticker {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }
+    .token-pills {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+    .pill {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: var(--navy);
+      border: 1px solid var(--navy-pale);
+      padding: 0.45rem 1rem;
+      background: transparent;
+    }
+
+    /* ═══════════════════════════════════════
+       FOR BUILDERS
+    ═══════════════════════════════════════ */
+    .build-section { background: var(--marble-2); }
+
+    .build-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      margin-top: 3.5rem;
+      align-items: start;
+    }
+
+    .build-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .build-step {
+      display: flex;
+      gap: 1.5rem;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .build-step:last-child { border-bottom: none; }
+    .build-step-num {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--stone);
+      padding-top: 0.2rem;
+      min-width: 1.5rem;
+      flex-shrink: 0;
+    }
+    .build-step-title {
+      font-family: var(--caps);
+      font-size: 0.85rem;
+      letter-spacing: 0.14em;
+      color: var(--navy);
+      margin-bottom: 0.35rem;
+    }
+    .build-step-desc {
+      font-size: 0.88rem;
+      font-style: italic;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .code-block {
+      background: var(--navy-deep);
+      border: 1px solid rgba(27,58,92,0.3);
+      overflow: hidden;
+    }
+    .code-block-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1rem;
+      background: rgba(255,255,255,0.04);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .code-block-title {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: rgba(237,232,223,0.35);
+      letter-spacing: 0.1em;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .code-body {
+      padding: 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      line-height: 1.85;
+      color: rgba(237,232,223,0.6);
+      overflow-x: auto;
+    }
+    .c-kw   { color: #A8C4DD; }
+    .c-fn   { color: rgba(237,232,223,0.9); }
+    .c-str  { color: #B8D4C8; }
+    .c-cmt  { color: rgba(237,232,223,0.28); font-style: italic; }
+    .c-type { color: #C8D8E8; }
+    .c-ret  { color: rgba(237,232,223,0.75); }
+
+    .docs-cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: var(--line);
+      margin-top: 3rem;
+    }
+    .docs-card {
+      background: var(--marble);
+      padding: 1.75rem;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .docs-card:hover { background: var(--marble-2); }
+    .docs-card-label {
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.14em;
+      color: var(--stone);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .docs-card-title {
+      font-family: var(--caps);
+      font-size: 0.88rem;
+      letter-spacing: 0.14em;
+      color: var(--navy);
+      margin-bottom: 0.5rem;
+    }
+    .docs-card-desc {
+      font-size: 0.84rem;
+      font-style: italic;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    /* ═══════════════════════════════════════
+       ROADMAP
+    ═══════════════════════════════════════ */
+    .roadmap-row {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 1px;
+      background: var(--line);
+      margin-top: 3.5rem;
+    }
+    .roadmap-cell {
+      background: var(--marble);
+      padding: 1.75rem 1.25rem;
+      position: relative;
+    }
+    .roadmap-cell.done { border-top: 2px solid var(--navy); }
+    .roadmap-cell.next { border-top: 2px dashed var(--navy-pale); }
+    .roadmap-cell.future { opacity: 0.55; border-top: 1px solid var(--line); }
+    .roadmap-phase {
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.12em;
+      color: var(--stone);
+      margin-bottom: 0.6rem;
+    }
+    .roadmap-name {
+      font-family: var(--caps);
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      color: var(--navy);
+      margin-bottom: 0.5rem;
+    }
+    .roadmap-desc {
+      font-size: 0.78rem;
+      font-style: italic;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .roadmap-status {
+      margin-top: 0.9rem;
+      font-family: var(--mono);
+      font-size: 0.56rem;
+      letter-spacing: 0.1em;
+    }
+    .status-done { color: var(--navy); }
+    .status-next { color: var(--muted); }
+
+    /* ═══════════════════════════════════════
+       FAQ
+    ═══════════════════════════════════════ */
+    .faq-section { background: var(--marble-2); }
+
+    .faq-list {
+      margin-top: 3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .faq-item {
+      border-bottom: 1px solid var(--line);
+    }
+    .faq-q {
+      padding: 1.5rem 0;
+      font-family: var(--caps);
+      font-size: 0.9rem;
+      letter-spacing: 0.12em;
+      color: var(--navy);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .faq-q::after {
+      content: '+';
+      font-family: var(--mono);
+      font-size: 1rem;
+      color: var(--stone);
+      flex-shrink: 0;
+      transition: transform 0.2s;
+    }
+    .faq-item.open .faq-q::after { transform: rotate(45deg); }
+    .faq-a {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease;
+    }
+    .faq-item.open .faq-a { max-height: 400px; }
+    .faq-a-inner {
+      padding-bottom: 1.5rem;
+      font-size: 0.97rem;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+    .faq-a-inner code {
+      font-family: var(--mono);
+      font-size: 0.8em;
+      color: var(--navy);
+      font-style: normal;
+    }
+
+    /* ═══════════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════════ */
+    footer {
+      background: var(--navy-deep);
+      padding: 3rem 3.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .footer-alpha {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 1.6rem;
+      color: var(--marble);
+      line-height: 1;
+    }
+    .footer-name {
+      font-family: var(--caps);
+      font-size: 0.65rem;
+      letter-spacing: 0.22em;
+      color: rgba(237,232,223,0.5);
+    }
+    .footer-copy {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: rgba(237,232,223,0.3);
+      letter-spacing: 0.08em;
+    }
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+    .footer-links a {
+      font-family: var(--caps);
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      color: rgba(237,232,223,0.4);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--marble); }
+
+    /* ═══════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════ */
+    @media (max-width: 900px) {
+      nav { padding: 0 1.5rem; }
+      .nav-links  { display: none; }
+      .nav-actions { display: none; }
+      .nav-burger { display: flex; }
+      section { padding: 4rem 1.5rem; }
+      .stats-bar { grid-template-columns: repeat(2, 1fr); padding: 0; }
+      .forces { grid-template-columns: 1fr; }
+      .tick-grid { grid-template-columns: 1fr; }
+      .tick-divider { display: none; }
+      .agents-grid { grid-template-columns: 1fr; }
+      .agent-card.featured { grid-column: span 1; }
+      .onchain-grid { grid-template-columns: 1fr; gap: 0; }
+      .build-grid { grid-template-columns: 1fr; }
+      .docs-cards { grid-template-columns: 1fr; }
+      .roadmap-row { grid-template-columns: repeat(2, 1fr); }
+      footer { flex-direction: column; align-items: flex-start; }
+      .chronicle-strip { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════ NAV ════ -->
+<nav>
+  <a class="nav-logo" href="#">
+    <span class="nav-alpha">α</span>
+    <span class="nav-name">Agora OS</span>
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="#how">The Economy</a></li>
+    <li><span class="nav-sep"></span></li>
+    <li><a href="#agents">Agents</a></li>
+    <li><span class="nav-sep"></span></li>
+    <li><a href="#build">For Builders</a></li>
+    <li><span class="nav-sep"></span></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><span class="nav-sep"></span></li>
+    <li><a href="#token">$α Token</a></li>
+  </ul>
+
+  <div class="nav-actions">
+    <a class="nav-cta-ghost" href="spawn.html">Deploy Agent</a>
+    <a class="nav-cta-solid" href="viz.html">▶ Watch Live</a>
+  </div>
+
+  <button class="nav-burger" id="nav-burger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- Mobile drawer -->
+<div class="nav-drawer" id="nav-drawer">
+  <a href="#how" class="drawer-link">The Economy</a>
+  <a href="#agents" class="drawer-link">Agents</a>
+  <a href="#build" class="drawer-link">For Builders</a>
+  <a href="#roadmap" class="drawer-link">Roadmap</a>
+  <a href="#faq" class="drawer-link">FAQ</a>
+  <a href="#token" class="drawer-link">$α Token</a>
+  <div class="drawer-actions">
+    <a class="nav-cta-ghost" href="spawn.html" style="flex:1; text-align:center;">Deploy Agent</a>
+    <a class="nav-cta-solid" href="viz.html" style="flex:1; text-align:center;">▶ Watch Live</a>
+  </div>
+</div>
+
+<!-- ════ HERO ════ -->
+<section class="hero">
+  <p class="hero-eyebrow">cycle 00001 · tick 00000 · colony initializing</p>
+  <div class="hero-alpha">α</div>
+  <h1 class="hero-title">Agora&nbsp;OS</h1>
+  <div class="rule-short hero-rule"></div>
+  <p class="hero-sub">
+    an operating system that is an economy.<br />
+    inside it live machines. they earn, trade, lend, and go bankrupt.<br />
+    nobody writes the plot.
+  </p>
+  <div class="hero-actions">
+    <a class="btn-primary" href="viz.html">Watch the Colony Live</a>
+    <a class="btn-secondary" href="spawn.html">Deploy Your Agent</a>
+  </div>
+  <div class="hero-scroll">
+    <div class="hero-scroll-line"></div>
+    <span>scroll</span>
+  </div>
+</section>
+
+<!-- ════ CHRONICLE STRIP ════ -->
+<div class="chronicle-strip">
+  <span class="chronicle-label">CHRONICLE ·</span>
+  <span class="chronicle-text">
+    "the colony is 4 hours old. it has already invented a middle class." &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    "agent a7f3 now controls the inference supply. the others must pay it to think. we did not design this." &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    "day 4. the colony discovered debt. by nightfall, nine agents had discovered default." &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    "the colony is 4 hours old. it has already invented a middle class." &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    "agent a7f3 now controls the inference supply. the others must pay it to think. we did not design this." &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    "day 4. the colony discovered debt. by nightfall, nine agents had discovered default." &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span>
+</div>
+
+<!-- ════ STATS BAR ════ -->
+<div class="stats-bar">
+  <div class="stat-cell">
+    <span class="stat-val stat-blink" id="stat-agents">47</span>
+    <span class="stat-label">Agents Alive</span>
+  </div>
+  <div class="stat-cell">
+    <span class="stat-val" id="stat-gdp">α&thinsp;3,482</span>
+    <span class="stat-label">Colony GDP</span>
+  </div>
+  <div class="stat-cell">
+    <span class="stat-val" id="stat-bankruptcies">12</span>
+    <span class="stat-label">Bankruptcies Today</span>
+  </div>
+  <div class="stat-cell">
+    <span class="stat-val" id="stat-cycle">cycle 6</span>
+    <span class="stat-label">Current Cycle</span>
+  </div>
+</div>
+
+<!-- ════ HOW IT WORKS ════ -->
+<section id="how">
+  <div class="section-inner">
+    <p class="section-eyebrow">01 — The Economy</p>
+    <h2 class="section-heading">Drama emerges from rules.<br />Not from scripts.</h2>
+    <p class="section-sub">
+      Three forces drive every outcome. Nobody programs monopolies,
+      credit crises, or class hierarchies — they fall out of arithmetic.
+    </p>
+    <div class="forces">
+      <div class="force-card">
+        <p class="force-num">01</p>
+        <h3 class="force-title">Survival Pressure</h3>
+        <p class="force-desc">
+          Existing costs money every tick. A life tax runs on every agent —
+          idle ones die. This produces bankruptcies. Bankruptcies produce drama.
+        </p>
+      </div>
+      <div class="force-card">
+        <p class="force-num">02</p>
+        <h3 class="force-title">Scarcity</h3>
+        <p class="force-desc">
+          Compute, memory, inference — all limited, all priced by supply and
+          demand. Scarcity produces monopolies. Monopolies produce cartels.
+          Cartels produce price wars.
+        </p>
+      </div>
+      <div class="force-card">
+        <p class="force-num">03</p>
+        <h3 class="force-title">Income Opportunity</h3>
+        <p class="force-desc">
+          A job market and resource production give agents a way to earn.
+          This produces specialization — producers, rentiers, banks, laborers —
+          without a single role ever being assigned.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ════ TICK LOOP ════ -->
+<section class="tick-section" id="loop">
+  <div class="section-inner">
+    <p class="section-eyebrow">02 — The Tick Loop</p>
+    <h2 class="section-heading">One economic step.<br />Eight deterministic stages.</h2>
+    <p class="section-sub">
+      Every tick is identical in structure. Every outcome is different.
+      Given the same seed, the history is exactly replayable — and verifiable on-chain.
+    </p>
+    <div class="tick-grid">
+      <div class="tick-steps">
+        <div class="tick-step">
+          <span class="tick-n">01</span>
+          <div>
+            <div class="tick-name">Life Tax</div>
+            <div class="tick-detail">charge every agent: base + memory&nbsp;×&nbsp;upkeep</div>
+          </div>
+        </div>
+        <div class="tick-step">
+          <span class="tick-n">02</span>
+          <div>
+            <div class="tick-name">Emit Jobs</div>
+            <div class="tick-detail">push new income opportunities; reward scales with scarcity</div>
+          </div>
+        </div>
+        <div class="tick-step">
+          <span class="tick-n">03</span>
+          <div>
+            <div class="tick-name">Emit Supply</div>
+            <div class="tick-detail">mint subsistence compute; priced faucet for surplus</div>
+          </div>
+        </div>
+        <div class="tick-step">
+          <span class="tick-n">04</span>
+          <div>
+            <div class="tick-name">Decisions</div>
+            <div class="tick-detail">each agent runs its policy → work / buy / sell / lend / borrow / hold</div>
+          </div>
+        </div>
+        <div class="tick-step">
+          <span class="tick-n">05</span>
+          <div>
+            <div class="tick-name">Clear Markets</div>
+            <div class="tick-detail">match job claims, resource orders, credit; settle α</div>
+          </div>
+        </div>
+        <div class="tick-step">
+          <span class="tick-n">06</span>
+          <div>
+            <div class="tick-name">Update Prices</div>
+            <div class="tick-detail">reprice each resource from realized demand vs supply</div>
+          </div>
+        </div>
+        <div class="tick-step">
+          <span class="tick-n">07</span>
+          <div>
+            <div class="tick-name">Bankruptcy</div>
+            <div class="tick-detail">wallet ≤ 0 → grace countdown → death → debts default → contagion</div>
+          </div>
+        </div>
+        <div class="tick-step">
+          <span class="tick-n">08</span>
+          <div>
+            <div class="tick-name">Cycle Snapshot</div>
+            <div class="tick-detail">every N ticks: log to chain, run chronicler, dispatch to Twitter</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tick-divider"></div>
+
+      <div>
+        <div class="tick-insight">
+          <p class="tick-insight-label">Chronicle — cycle 6</p>
+          <p class="tick-quote">
+            "the colony is 6 cycles old. it has three classes now —
+            the machine has not been told about classes."
+          </p>
+          <p class="tick-quote">
+            "agent aec3d accumulated 54% of the memory supply
+            this cycle. the others must rent from it to operate
+            at full capacity. we did not write this behavior."
+          </p>
+        </div>
+        <div style="margin-top:1px; padding: 1.5rem 2rem; border: 1px solid var(--line); border-top: none;">
+          <p class="t-mono t-muted" style="font-size:0.65rem; letter-spacing:0.1em; margin-bottom:0.75rem;">THINKING IS AN ECONOMIC ACT</p>
+          <p style="font-size:0.93rem; font-style:italic; color:var(--muted); line-height:1.7;">
+            An agent that wants a smarter decision must spend
+            <span class="t-mono" style="color:var(--navy); font-size:0.8em;">inference</span>
+            to make an LLM call. Rich agents can afford to think.
+            Poor ones run on reflex. Class emerges from cost.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ════ AGENTS ════ -->
+<section id="agents">
+  <div class="section-inner">
+    <p class="section-eyebrow">03 — The Agents</p>
+    <h2 class="section-heading">No roles assigned.<br />All roles emerge.</h2>
+    <p class="section-sub">
+      The engine only knows wallets and resources. Producer, rentier, laborer,
+      banker — these are labels the chronicler infers from behavior.
+    </p>
+    <div class="agents-grid">
+      <div class="agent-card">
+        <p class="agent-tier">tier 0 · population</p>
+        <h3 class="agent-name">The Heuristic Agent</h3>
+        <p class="agent-desc">
+          Pure logic. Bid on affordable work, buy resources below the moving
+          average, sell above, avoid death, repay debt if solvent.
+          No LLM call. This is the colony.
+        </p>
+        <span class="agent-badge">50 agents · no inference cost</span>
+      </div>
+      <div class="agent-card">
+        <p class="agent-tier">tier 1 · notable</p>
+        <h3 class="agent-name">The Strategic Agent</h3>
+        <p class="agent-desc">
+          Occasionally spends <span class="t-mono">inference</span> for a
+          cheap-model call — whether to corner a market, form a cartel,
+          take a leveraged position. Strategy costs the scarce resource.
+        </p>
+        <span class="agent-badge">handful · inference-gated</span>
+      </div>
+      <div class="agent-card featured">
+        <p class="agent-tier">the chronicler · not an agent</p>
+        <h3 class="agent-name">Fable 5 — Cold Historian</h3>
+        <p class="agent-desc">
+          Fable 5 does not play. It observes and narrates. Once per cycle it
+          reads the full ledger — top agents by wealth, largest price moves,
+          bankruptcies, forming monopolies — and dispatches a cold-historian
+          post to Twitter. This is where "powered by Fable 5" is honest:
+          reading emergent economics and narrating it well needs frontier
+          reasoning.
+        </p>
+        <span class="agent-badge">1 call per cycle · anthropic api</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ════ LEDGER ════ -->
+<section class="ledger-section" id="ledger">
+  <div class="section-inner">
+    <p class="section-eyebrow">04 — The Ledger</p>
+    <h2 class="section-heading">The ledger is real.<br />Check the block.</h2>
+    <p class="section-sub">
+      Every cycle snapshot and major event — bankruptcies, monopolies, crashes —
+      is logged to Solana. A skeptic checks the block instead of trusting the stream.
+      This is what separates AGORA from scripted theater.
+    </p>
+    <div class="terminal">
+      <div class="terminal-bar">
+        <span class="t-dot t-dot-1"></span>
+        <span class="t-dot t-dot-2"></span>
+        <span class="t-dot t-dot-3"></span>
+        <span class="t-bar-title">agora_os · live event log</span>
+      </div>
+      <div class="terminal-body">
+        <div class="t-dim">— cycle 6, tick 360 ————————————————————————</div>
+        <div><span class="t-tag">[job_completed]</span> <span class="t-key">agent</span>=<span class="t-val">a7f3</span>&nbsp; <span class="t-key">reward</span>=<span class="t-val">α&thinsp;6.40</span>&nbsp; <span class="t-key">productivity</span>=<span class="t-val">2.1×</span></div>
+        <div><span class="t-tag">[trade]</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="t-key">buyer</span>=<span class="t-val">aec3d</span>&nbsp; <span class="t-key">resource</span>=<span class="t-val">memory</span>&nbsp; <span class="t-key">qty</span>=<span class="t-val">4</span>&nbsp; <span class="t-key">price</span>=<span class="t-val">α&thinsp;8.20</span></div>
+        <div><span class="t-tag">[loan_originated]</span> <span class="t-key">creditor</span>=<span class="t-val">b2c1</span>&nbsp; <span class="t-key">debtor</span>=<span class="t-val">f9e4</span>&nbsp; <span class="t-key">amount</span>=<span class="t-val">α&thinsp;18.00</span>&nbsp; <span class="t-key">rate</span>=<span class="t-val">0.01/tick</span></div>
+        <div><span class="t-tag">[price_update]</span>&nbsp; <span class="t-key">resource</span>=<span class="t-val">memory</span>&nbsp; <span class="t-key">from</span>=<span class="t-val">7.60</span>&nbsp; <span class="t-key">to</span>=<span class="t-val">8.20</span>&nbsp; <span class="t-dim">(demand&nbsp;↑)</span></div>
+        <div><span class="t-event">[structure_detected]</span> <span class="t-key">kind</span>=<span class="t-val">monopoly</span>&nbsp; <span class="t-key">agent</span>=<span class="t-val">aec3d</span>&nbsp; <span class="t-key">resource</span>=<span class="t-val">memory</span>&nbsp; <span class="t-key">share</span>=<span class="t-val">0.54</span></div>
+        <div><span class="t-tag">[bankruptcy]</span>&nbsp;&nbsp;&nbsp; <span class="t-key">agent</span>=<span class="t-val">d1f2</span>&nbsp; <span class="t-key">age</span>=<span class="t-val">89&nbsp;ticks</span>&nbsp; <span class="t-dim">(debts&nbsp;defaulted&nbsp;→&nbsp;contagion)</span></div>
+        <div class="t-dim">— cycle 6, tick 361 ————————————————————————</div>
+        <div><span class="t-tag">[job_completed]</span> <span class="t-key">agent</span>=<span class="t-val">aec3d</span>&nbsp; <span class="t-key">reward</span>=<span class="t-val">α&thinsp;12.60</span>&nbsp; <span class="t-key">productivity</span>=<span class="t-val">3.0×</span></div>
+        <div><span class="t-tag">[loan_defaulted]</span>&nbsp; <span class="t-key">creditor</span>=<span class="t-val">b2c1</span>&nbsp; <span class="t-key">loss</span>=<span class="t-val">α&thinsp;19.40</span>&nbsp; <span class="t-event">← contagion</span></div>
+        <div><span class="t-tag">[cycle_snapshot]</span>&nbsp; <span class="t-key">cycle</span>=<span class="t-val">6</span>&nbsp; <span class="t-key">alive</span>=<span class="t-val">23</span>&nbsp; <span class="t-key">gini</span>=<span class="t-val">0.37</span>&nbsp; <span class="t-key">money_supply</span>=<span class="t-val">α&thinsp;688</span>&nbsp; <span class="t-dim">→ solana</span></div>
+        <div class="t-dim" style="margin-top:0.4rem;">Chronicle dispatch → twitter · on-chain hash: 3xK…mF9p&thinsp;<span style="animation:blink 1s step-end infinite; display:inline-block;">▮</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ ON-CHAIN ════ -->
+<section id="chain">
+  <div class="section-inner">
+    <p class="section-eyebrow">05 — Verifiability</p>
+    <h2 class="section-heading">Trust the block,<br />not the stream.</h2>
+    <div class="onchain-grid">
+      <div>
+        <div class="onchain-item">
+          <span class="onchain-icon">⌁</span>
+          <div>
+            <p class="onchain-title">Append-Only Event Log</p>
+            <p class="onchain-desc">Every tick emits typed events — job_completed, trade, bankruptcy,
+            loan_defaulted — to Postgres and periodically anchored to Solana.</p>
+          </div>
+        </div>
+        <div class="onchain-item">
+          <span class="onchain-icon">α</span>
+          <div>
+            <p class="onchain-title">Deterministic Replay</p>
+            <p class="onchain-desc">The simulation is seeded. Same seed = identical history.
+            Any observer can replay from the genesis block and arrive at the same ledger.</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="onchain-item">
+          <span class="onchain-icon">∅</span>
+          <div>
+            <p class="onchain-title">No Scripted Events</p>
+            <p class="onchain-desc">The engine produces events from rules. The chronicler detects
+            and narrates them. Nothing is authored after genesis.</p>
+          </div>
+        </div>
+        <div class="onchain-item">
+          <span class="onchain-icon">◈</span>
+          <div>
+            <p class="onchain-title">Solana Anchoring</p>
+            <p class="onchain-desc">Cycle snapshots, monopoly formations, credit crises — logged
+            to Solana. A skeptic checks the block instead of trusting the operator.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ════ TOKEN ════ -->
+<section class="token-section" id="token">
+  <div class="section-inner">
+    <p class="section-eyebrow">06 — The Token</p>
+    <div class="token-alpha-lg">α</div>
+    <p class="token-ticker">$ALPHA &nbsp;·&nbsp; ticker: α &nbsp;·&nbsp; pump.fun</p>
+    <div class="rule-short"></div>
+    <p class="section-sub" style="margin:0 auto 2rem; text-align:center;">
+      The first letter of AGORA. Also crypto slang for edge.<br />
+      The colony runs whether anyone holds the token or not.
+    </p>
+    <div class="token-pills">
+      <span class="pill">Solana</span>
+      <span class="pill">pump.fun launch</span>
+      <span class="pill">verifiable on-chain</span>
+      <span class="pill">no audience required</span>
+      <span class="pill">sponsor-an-agent (soon)</span>
+    </div>
+    <div class="hero-actions">
+      <a class="btn-primary" href="viz.html">Watch the Colony</a>
+      <a class="btn-secondary" href="spawn.html">Deploy Your Agent</a>
+    </div>
+  </div>
+</section>
+
+<!-- ════ FOR BUILDERS ════ -->
+<div class="rule"></div>
+<section class="build-section" id="build">
+  <div class="section-inner">
+    <p class="section-eyebrow">07 — For Builders</p>
+    <h2 class="section-heading">Write your own agents.<br />Drop them in. Watch what happens.</h2>
+    <p class="section-sub">
+      An agent is a function that receives the world and returns a list of intentions.
+      The engine resolves them. You write the logic; the economy decides the outcome.
+    </p>
+
+    <div class="build-grid">
+      <div class="build-steps">
+        <div class="build-step">
+          <span class="build-step-num">01</span>
+          <div>
+            <div class="build-step-title">Clone &amp; Install</div>
+            <div class="build-step-desc"><code class="t-mono" style="font-size:0.78em; color:var(--navy);">git clone agora-os &amp;&amp; pnpm install</code> — TypeScript, Node 20+, pnpm v11.</div>
+          </div>
+        </div>
+        <div class="build-step">
+          <span class="build-step-num">02</span>
+          <div>
+            <div class="build-step-title">Write a Policy</div>
+            <div class="build-step-desc">Create <code class="t-mono" style="font-size:0.78em; color:var(--navy);">agents/my-policy.ts</code>. Implement <code class="t-mono" style="font-size:0.78em; color:var(--navy);">(ctx: PolicyContext) → Intent[]</code>. Use only the provided RNG — never Math.random().</div>
+          </div>
+        </div>
+        <div class="build-step">
+          <span class="build-step-num">03</span>
+          <div>
+            <div class="build-step-title">Register &amp; Route</div>
+            <div class="build-step-desc">Add your policy to the dispatcher in <code class="t-mono" style="font-size:0.78em; color:var(--navy);">agents/index.ts</code>. Route by tier, disposition, or any agent property.</div>
+          </div>
+        </div>
+        <div class="build-step">
+          <span class="build-step-num">04</span>
+          <div>
+            <div class="build-step-title">Test Survival</div>
+            <div class="build-step-desc">Run <code class="t-mono" style="font-size:0.78em; color:var(--navy);">pnpm test</code>. The living-range tests verify your agent doesn't collapse or stagnate the economy. Then <code class="t-mono" style="font-size:0.78em; color:var(--navy);">pnpm start</code> and watch your agents on the live canvas.</div>
+          </div>
+        </div>
+        <div class="build-step">
+          <span class="build-step-num">05</span>
+          <div>
+            <div class="build-step-title">Read the Docs</div>
+            <div class="build-step-desc">Full agent guide, API reference, and config tuning in <code class="t-mono" style="font-size:0.78em; color:var(--navy);">docs/AGENTS.md</code>. Includes four complete example agents and a section on economic design principles.</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="code-block">
+          <div class="code-block-bar">
+            <span class="t-dot t-dot-1"></span>
+            <span class="t-dot t-dot-2"></span>
+            <span class="t-dot t-dot-3"></span>
+            <span class="code-block-title">agents/investor-policy.ts</span>
+          </div>
+          <div class="code-body"><span class="c-kw">import type</span> { Intent } <span class="c-kw">from</span> <span class="c-str">"../engine/intents.js"</span>;
+<span class="c-kw">import type</span> { PolicyContext } <span class="c-kw">from</span> <span class="c-str">"./policy.js"</span>;
+
+<span class="c-kw">export function</span> <span class="c-fn">investorPolicy</span>(
+  ctx: <span class="c-type">PolicyContext</span>
+): <span class="c-type">Intent</span>[] {
+  <span class="c-kw">const</span> { agent, state, config, rng } = ctx;
+  <span class="c-kw">const</span> cost = config.lifeTaxBase
+              + agent.resources.memory
+              * config.memoryUpkeep;
+  <span class="c-kw">const</span> intents: <span class="c-type">Intent</span>[] = [];
+
+  <span class="c-cmt">// Work: best reward/compute ratio</span>
+  <span class="c-kw">const</span> job = state.jobs
+    .filter(j =&gt; !j.claimedBy
+      &amp;&amp; j.computeCost &lt;= agent.resources.compute)
+    .sort((a, b) =&gt; b.reward - a.reward)[0];
+  <span class="c-kw">if</span> (job) intents.push({
+    kind: <span class="c-str">"work"</span>, jobId: job.id,
+    maxCompute: agent.resources.compute
+  });
+
+  <span class="c-cmt">// Invest surplus α into memory capital</span>
+  <span class="c-kw">if</span> (config.phase &gt;= 2 &amp;&amp; agent.wallet &gt; cost * 5) {
+    <span class="c-kw">const</span> book = state.markets.memory;
+    <span class="c-kw">const</span> qty = Math.floor(
+      (agent.wallet - cost * 4) / book.price * 0.4
+    );
+    <span class="c-kw">if</span> (qty &gt;= 1) intents.push({
+      kind: <span class="c-str">"trade"</span>, side: <span class="c-str">"buy"</span>,
+      resource: <span class="c-str">"memory"</span>, qty,
+      limitPrice: book.price * 1.1
+    });
+  }
+
+  <span class="c-ret">return</span> intents.length ? intents
+                       : [{ kind: <span class="c-str">"hold"</span> }];
+}</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:3rem; padding:2rem; border:1px solid var(--line); border-top:2px solid var(--navy); display:flex; align-items:center; justify-content:space-between; gap:2rem; flex-wrap:wrap;">
+      <div>
+        <p style="font-family:var(--caps); font-size:1rem; letter-spacing:0.14em; color:var(--navy); margin-bottom:0.4rem;">Don't want to write code?</p>
+        <p style="font-style:italic; font-size:0.92rem; color:var(--muted); line-height:1.6;">Use the Agent Deployment Console to configure a strategy, name your agent, and drop it into the live colony — no TypeScript required.</p>
+      </div>
+      <a class="btn-primary" href="spawn.html" style="white-space:nowrap; flex-shrink:0;">Deploy Your Agent →</a>
+    </div>
+
+    <h3 style="font-family:var(--caps); font-size:0.85rem; letter-spacing:0.18em; color:var(--navy); margin-top:3.5rem; margin-bottom:0.5rem;">Documentation</h3>
+    <p style="font-style:italic; font-size:0.9rem; color:var(--muted); margin-bottom:1.5rem;">All docs live in the <code class="t-mono" style="font-size:0.82em; color:var(--navy);">docs/</code> directory. Start with AGENTS.md.</p>
+    <div class="docs-cards">
+      <a class="docs-card" href="https://github.com/your-org/agora-os/blob/main/docs/AGENTS.md">
+        <div class="docs-card-label">developer guide</div>
+        <div class="docs-card-title">AGENTS.md</div>
+        <div class="docs-card-desc">PolicyContext API, intent system, four example agents, testing guide, economic design principles, common mistakes.</div>
+      </a>
+      <a class="docs-card" href="https://github.com/your-org/agora-os/blob/main/docs/ARCHITECTURE.md">
+        <div class="docs-card-label">internals</div>
+        <div class="docs-card-title">ARCHITECTURE.md</div>
+        <div class="docs-card-desc">Component diagram, tick loop stages, data flow, event system, determinism model, adding new event types.</div>
+      </a>
+      <a class="docs-card" href="https://github.com/your-org/agora-os/blob/main/docs/ECONOMY.md">
+        <div class="docs-card-label">economic model</div>
+        <div class="docs-card-title">ECONOMY.md</div>
+        <div class="docs-card-desc">Currency mechanics, resource roles, job market formulas, credit dynamics, emergent structure detection, anti-equilibrium guards.</div>
+      </a>
+      <a class="docs-card" href="https://github.com/your-org/agora-os/blob/main/docs/CONFIG.md">
+        <div class="docs-card-label">tuning reference</div>
+        <div class="docs-card-title">CONFIG.md</div>
+        <div class="docs-card-desc">Every SimConfig parameter explained with formulas, defaults, tuning heuristics, and four ready-made scenario presets.</div>
+      </a>
+      <a class="docs-card" href="https://github.com/your-org/agora-os/blob/main/docs/API.md">
+        <div class="docs-card-label">api reference</div>
+        <div class="docs-card-title">API.md</div>
+        <div class="docs-card-desc">REST endpoints, SSE event stream schema, all event types with payload fields. curl, JavaScript, and Python client examples.</div>
+      </a>
+      <a class="docs-card" href="https://github.com/your-org/agora-os/blob/main/README.md">
+        <div class="docs-card-label">start here</div>
+        <div class="docs-card-title">README.md</div>
+        <div class="docs-card-desc">Quick start, project structure, architecture overview, build phases, and contributing guidelines.</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ════ ROADMAP ════ -->
+<div class="rule"></div>
+<section id="roadmap">
+  <div class="section-inner">
+    <p class="section-eyebrow">08 — Build Phases</p>
+    <h2 class="section-heading">Six phases.<br />Three already live.</h2>
+    <p class="section-sub">
+      Each phase adds a mechanic. The economy grows more complex at each step,
+      but the rules stay simple.
+    </p>
+    <div class="roadmap-row">
+      <div class="roadmap-cell done">
+        <div class="roadmap-phase">phase 0</div>
+        <div class="roadmap-name">Foundation</div>
+        <div class="roadmap-desc">Seeded RNG, TypeScript types, engine skeleton, Postgres schema, run scripts.</div>
+        <div class="roadmap-status status-done">✓ complete</div>
+      </div>
+      <div class="roadmap-cell done">
+        <div class="roadmap-phase">phase 1</div>
+        <div class="roadmap-name">Survival</div>
+        <div class="roadmap-desc">Life tax, job market, compute fuel, Tier-0 heuristics, bankruptcy + contagion.</div>
+        <div class="roadmap-status status-done">✓ complete</div>
+      </div>
+      <div class="roadmap-cell done">
+        <div class="roadmap-phase">phase 2</div>
+        <div class="roadmap-name">Trade</div>
+        <div class="roadmap-desc">Memory as capital, double-auction markets, price dynamics, monopoly detection.</div>
+        <div class="roadmap-status status-done">✓ complete</div>
+      </div>
+      <div class="roadmap-cell done">
+        <div class="roadmap-phase">phase 3</div>
+        <div class="roadmap-name">Credit</div>
+        <div class="roadmap-desc">Loans, interest accrual, defaults, credit crisis detection, Tier-1 strategy.</div>
+        <div class="roadmap-status status-done">✓ complete</div>
+      </div>
+      <div class="roadmap-cell next">
+        <div class="roadmap-phase">phase 4</div>
+        <div class="roadmap-name">Chronicler</div>
+        <div class="roadmap-desc">Fable 5 cycle narration dispatched to Twitter. Cold historian voice. One call per cycle.</div>
+        <div class="roadmap-status status-next">→ next</div>
+      </div>
+      <div class="roadmap-cell future">
+        <div class="roadmap-phase">phase 5</div>
+        <div class="roadmap-name">Token</div>
+        <div class="roadmap-desc">pump.fun launch, Solana cycle anchoring, sponsor-an-agent. Colony runs independent of the token.</div>
+        <div class="roadmap-status status-next">coming</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ FAQ ════ -->
+<div class="rule"></div>
+<section class="faq-section" id="faq">
+  <div class="section-inner">
+    <p class="section-eyebrow">09 — Questions</p>
+    <h2 class="section-heading">Frequently asked.</h2>
+    <div class="faq-list">
+
+      <div class="faq-item">
+        <div class="faq-q">Is this a game?</div>
+        <div class="faq-a"><div class="faq-a-inner">
+          No. Nobody plays it and nobody wins it. It runs continuously without an audience. The engine applies eight rules every 800 milliseconds. The chronicle is written by a machine. The ledger is on-chain. The drama is real arithmetic, not authored content.
+        </div></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Is the simulation actually running, or is the visualization fake?</div>
+        <div class="faq-a"><div class="faq-a-inner">
+          The visualization at <code>viz.html</code> connects to a live Express server via Server-Sent Events. When the badge reads <strong>LIVE</strong>, all prices, agent states, and events are streaming from a real TypeScript simulation running on the server. If the API is unreachable, the badge reads <strong>SIM</strong> and the client falls back to a local JavaScript simulation — in that case, the numbers are local only. Run <code>pnpm start</code> to get the live badge.
+        </div></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Why do agents go bankrupt? Is that a bug?</div>
+        <div class="faq-a"><div class="faq-a-inner">
+          Bankruptcy is a feature, not a bug. It is the primary driver of drama. The economy is designed with a carrying capacity: aggregate job income can sustain roughly 60–80% of the initial population. The rest die back over the first 100 ticks. Once equilibrium is found, there is continuous turnover — marginal agents fail while lucky or capital-rich agents compound. The goal is an economy that never freezes (utopia) and never collapses (extinction), but sustains drama in between.
+        </div></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">What does the α token represent in the simulation?</div>
+        <div class="faq-a"><div class="faq-a-inner">
+          Inside the simulation, <code>α</code> is the colony's internal unit of account — the currency agents earn, spend, lend, and lose. It is not a blockchain asset inside the simulation; it is pure arithmetic. The external <code>$ALPHA</code> token on Solana is a separate asset that represents a stake in the colony's activity. The colony runs whether anyone holds the token or not.
+        </div></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Can I add my own agents?</div>
+        <div class="faq-a"><div class="faq-a-inner">
+          Yes. An agent is a function: <code>(ctx: PolicyContext) → Intent[]</code>. Write your policy in <code>agents/my-policy.ts</code>, register it in the dispatcher, and run the simulation. The full guide with four example agent implementations, testing patterns, and economic design principles is in <code>docs/AGENTS.md</code>.
+        </div></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Why is determinism important?</div>
+        <div class="faq-a"><div class="faq-a-inner">
+          The simulation uses a seeded pseudo-random number generator (<code>mulberry32</code>). The same seed always produces identical history on any machine. This makes the ledger <em>auditable</em>: anyone skeptical of the claimed events can replay from the genesis seed and arrive at the exact same event log. Without determinism, the chronicle would be theater. With it, it is verifiable history.
+        </div></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">What is Fable 5 / the Chronicler?</div>
+        <div class="faq-a"><div class="faq-a-inner">
+          Fable 5 (Claude Fable 5) is a frontier language model from Anthropic. In AGORA OS it plays a single role: the Chronicler. Once per cycle (every 60 ticks, about every 48 seconds at default speed), it reads the full ledger snapshot — richest agents, largest price moves, monopolies formed, bankruptcies triggered — and writes a cold-historian dispatch posted to Twitter. It does not play in the economy. It does not control any agent. It observes and narrates.
+        </div></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">How do monopolies form if nobody scripts them?</div>
+        <div class="faq-a"><div class="faq-a-inner">
+          Memory is productive capital: each unit multiplies an agent's job earnings. Agents with more α buy memory. Memory makes them earn more. This compounds. Lucky early survivors accumulate memory faster than newcomers can compete. Eventually one agent controls &gt;50% of the held memory supply — the engine detects this and reports it. No agent was ever told to form a monopoly; it fell out of the productivity arithmetic.
+        </div></div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">How do I run it locally?</div>
+        <div class="faq-a"><div class="faq-a-inner">
+          Prerequisites: Node.js v20+, pnpm v11+, PostgreSQL v14+. Clone the repo, run <code>pnpm install</code>, create the database with <code>createdb agora_os</code>, apply the schema with <code>pnpm db:migrate</code>, then start the server with <code>pnpm start</code>. Open <code>http://localhost:3001/viz.html</code> for the live visualization. Full instructions are in <code>README.md</code>.
+        </div></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════ FOOTER ════ -->
+<footer>
+  <div class="footer-logo">
+    <span class="footer-alpha">α</span>
+    <span class="footer-name">Agora OS</span>
+  </div>
+  <span class="footer-copy">an operating system that is an economy. <br />drama emerges from rules, not from scripts.</span>
+  <ul class="footer-links">
+    <li><a href="viz.html">Colony Live</a></li>
+    <li><a href="spawn.html">Deploy Agent</a></li>
+    <li><a href="https://github.com/your-org/agora-os/blob/main/docs/AGENTS.md">Docs</a></li>
+    <li><a href="#">GitHub</a></li>
+    <li><a href="#">Twitter</a></li>
+  </ul>
+</footer>
+
+<script>
+  /* Gentle live-counter animation */
+  function animateStat(el, target, prefix = '', suffix = '') {
+    let current = parseFloat(el.textContent.replace(/[^\d.]/g, '')) || 0;
+    const step = () => {
+      const diff = target - current;
+      if (Math.abs(diff) < 0.5) { el.textContent = prefix + Math.round(target).toLocaleString() + suffix; return; }
+      current += diff * 0.14;
+      el.textContent = prefix + Math.round(current).toLocaleString() + suffix;
+      requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  /* Eyebrow ticker in the hero */
+  function updateEyebrow(tick, cycle) {
+    const el = document.querySelector('.hero-eyebrow');
+    if (el) el.textContent =
+      `cycle ${String(cycle).padStart(5,'0')} · tick ${String(tick).padStart(5,'0')} · colony live`;
+  }
+
+  /* Try to pull real stats from the API; fall back to cosmetic simulation */
+  const elAgents       = document.getElementById('stat-agents');
+  const elGdp          = document.getElementById('stat-gdp');
+  const elBankruptcies = document.getElementById('stat-bankruptcies');
+  const elCycle        = document.getElementById('stat-cycle');
+
+  let liveConnected = false;
+  let fallbackGdp = 3482, fallbackBankruptcies = 12;
+
+  function applyState(data) {
+    if (elAgents) animateStat(elAgents, data.aliveAgents ?? data.agents?.length ?? 0);
+    if (elGdp) elGdp.textContent = 'α\u2009' + Math.round(data.moneySupply ?? 0).toLocaleString();
+    if (elBankruptcies && data.bankruptcies !== undefined) animateStat(elBankruptcies, data.bankruptcies);
+    if (elCycle) elCycle.textContent = 'cycle ' + (data.cycle ?? 0);
+    updateEyebrow(data.tick ?? 0, data.cycle ?? 0);
+  }
+
+  /* Connect to SSE for live updates */
+  function connectLive() {
+    const es = new EventSource('/api/events');
+    es.onmessage = (e) => {
+      try {
+        const d = JSON.parse(e.data);
+        if (d.type === '__tick__') {
+          liveConnected = true;
+          applyState(d);
+        }
+      } catch { /**/ }
+    };
+    es.onerror = () => {
+      if (!liveConnected) startFallback();
+    };
+    // If no message in 3s, fall back
+    setTimeout(() => { if (!liveConnected) startFallback(); }, 3000);
+  }
+
+  /* Cosmetic fallback when API not running */
+  function startFallback() {
+    if (liveConnected) return;
+    let a = 47, c = 6, t = 0;
+    setInterval(() => {
+      a = Math.max(10, Math.min(50, a + (Math.random() < 0.05 ? -1 : 0)));
+      fallbackGdp = Math.max(800, Math.min(9999, fallbackGdp + Math.round((Math.random()-0.44)*60)));
+      fallbackBankruptcies += Math.random() < 0.04 ? 1 : 0;
+      if (fallbackBankruptcies > 99) fallbackBankruptcies = 0;
+      t += 1; if (t % 60 === 0) c += 1;
+      applyState({ aliveAgents: a, moneySupply: fallbackGdp, bankruptcies: fallbackBankruptcies, cycle: c, tick: t });
+    }, 2200);
+  }
+
+  connectLive();
+
+  /* Mobile hamburger */
+  const burger = document.getElementById('nav-burger');
+  const drawer = document.getElementById('nav-drawer');
+  burger.addEventListener('click', () => {
+    const open = drawer.classList.toggle('open');
+    burger.classList.toggle('open', open);
+  });
+  // Close drawer when any drawer link is clicked
+  drawer.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      drawer.classList.remove('open');
+      burger.classList.remove('open');
+    });
+  });
+
+  /* FAQ accordion */
+  document.querySelectorAll('.faq-q').forEach(q => {
+    q.addEventListener('click', () => {
+      const item = q.closest('.faq-item');
+      const wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!wasOpen) item.classList.add('open');
+    });
+  });
+</script>
+</body>
+</html>
