@@ -793,9 +793,25 @@
     .token-ca-addr {
       font-family: var(--mono);
       font-size: 0.72rem;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
       color: var(--navy);
+      word-break: break-all;
     }
+    .token-ca-copy {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      padding: 0.2rem 0.55rem;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: color 0.15s, border-color 0.15s;
+      user-select: none;
+    }
+    .token-ca-copy:hover { color: var(--navy); border-color: var(--navy); }
+    .token-ca-wrap { cursor: pointer; }
     .token-pills {
       display: flex;
       justify-content: center;
@@ -1490,9 +1506,10 @@
   <div class="section-inner">
     <p class="section-eyebrow">06 — The Token</p>
     <div class="token-alpha-lg">α</div>
-    <div class="token-ca-wrap">
-      <span class="token-ca-label">contract</span>
-      <span class="token-ca-addr">— not yet deployed —</span>
+    <div class="token-ca-wrap" id="ca-wrap" title="Click to copy">
+      <span class="token-ca-label">CA</span>
+      <span class="token-ca-addr" id="ca-addr">7TsmdctzaUjgu8J254LLS9SyR4qJkMVj3TQBTwaNpump</span>
+      <span class="token-ca-copy" id="ca-copy">copy</span>
     </div>
     <div class="rule-short"></div>
     <p class="section-sub" style="margin:0 auto 2rem; text-align:center;">
@@ -1883,6 +1900,20 @@
       burger.classList.remove('open');
     });
   });
+
+  /* Contract address copy */
+  const caWrap = document.getElementById('ca-wrap');
+  const caCopy = document.getElementById('ca-copy');
+  if (caWrap) {
+    caWrap.addEventListener('click', () => {
+      const addr = document.getElementById('ca-addr').textContent;
+      navigator.clipboard.writeText(addr).then(() => {
+        caCopy.textContent = 'copied!';
+        caCopy.style.color = 'var(--navy)';
+        setTimeout(() => { caCopy.textContent = 'copy'; caCopy.style.color = ''; }, 1800);
+      });
+    });
+  }
 
   /* FAQ accordion */
   document.querySelectorAll('.faq-q').forEach(q => {
