@@ -398,7 +398,9 @@ function applyServerEvent(ev) {
 // ════════════════════════════════════════════════════════════
 //  API CONNECTION
 // ════════════════════════════════════════════════════════════
-const API = 'http://localhost:3001';
+const API = window.location.port === '3001'
+  ? 'http://localhost:3001'
+  : window.location.origin;
 let apiRetries = 0;
 
 async function connectAPI() {
@@ -533,76 +535,150 @@ function updateUI() {
 }
 
 // ════════════════════════════════════════════════════════════
-//  COIN RENDERING
+//  COIN RENDERING — true 3D cylinder with rim & specular
 // ════════════════════════════════════════════════════════════
-function coinRadius(a) { return Math.max(9, Math.min(48, 10+Math.sqrt(Math.max(0,a.wallet))*1.7)); }
+function coinRadius(a) { return Math.max(10, Math.min(52, 11+Math.sqrt(Math.max(0,a.wallet))*1.85)); }
 
+// Returns [face-top, face-mid, face-dark, rim-light, rim-dark]
 function coinColors(a) {
-  const w = Math.max(0,a.wallet);
+  const w = Math.max(0, a.wallet);
   const dying = a.wallet<=0 && a.deathCountdown<CFG.deathGrace;
-  if (dying) { const t=(Math.sin(Date.now()*.008)*.5+.5); return [`rgb(${80+Math.floor(t*30)},20,20)`,`#4A1515`,'#200A0A']; }
-  if (w>80)  return ['#3A72A8','#1B3A5C','#0D1E30'];
-  if (w>50)  return ['#2E5F8A','#1B3A5C','#111D2E'];
-  if (w>28)  return ['#3A6678','#22455A','#121F28'];
-  if (w>12)  return ['#5A7A90','#2E4A5A','#151F25'];
-  return ['#7A9098','#485A64','#1E2A2E'];
+  if (dying) {
+    const t = Math.sin(Date.now()*.008)*.5+.5;
+    return [`rgb(${90+Math.floor(t*40)},25,25)`,'#5A1818','#2A0808','#7A2020','#1A0505'];
+  }
+  if (w>100) return ['#5A90C8','#2860A0','#0D2A55','#8AB8E0','#0A1E3A'];
+  if (w>70)  return ['#4880B8','#1B3A5C','#0A1E38','#6A98C8','#081525'];
+  if (w>40)  return ['#3A6E94','#1E4A68','#0E2233','#5A8EB0','#091929'];
+  if (w>20)  return ['#4A7A90','#2A4E60','#121E28','#6A98A8','#0A1820'];
+  if (w>8)   return ['#5A7A88','#324858','#141C22','#7A9AA8','#0E1820'];
+  return          ['#6A7A80','#3A4850','#14181C','#8A9898','#0C1014'];
 }
 
 function drawCoin(a) {
-  const r = coinRadius(a);
-  const [c0,c1,c2] = coinColors(a);
-  const {x,y} = a;
+  const r  = coinRadius(a);
+  const [fc0,fc1,fc2,rc0,rc1] = coinColors(a);
+  const {x} = a;
+  // Y-offset: face sits on top of the rim edge
+  const TILT = 0.28;       // how much the top ellipse is squashed (isometric tilt)
+  const DEPTH = r * 0.22;  // coin rim depth in pixels
+  const fy = a.y - DEPTH * 0.5; // face centre (shifted up by half-depth)
 
   ctx.save();
 
-  // 1. Drop shadow
-  ctx.shadowColor   = 'rgba(0,0,0,0.38)';
-  ctx.shadowBlur    = r*.9;
-  ctx.shadowOffsetX = r*.12;
-  ctx.shadowOffsetY = r*.2;
+  // 0. Cast shadow on floor — soft ellipse
+  {
+    const sg = ctx.createRadialGradient(x+r*.18, a.y+DEPTH*.8+r*.12, r*.05, x+r*.12, a.y+DEPTH*.8, r*1.4);
+    sg.addColorStop(0,'rgba(0,0,0,0.28)');
+    sg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.save();
+    ctx.scale(1, 0.32);
+    ctx.beginPath();
+    ctx.arc(x, (a.y+DEPTH*.8+r*.18) / 0.32, r*1.35, 0, Math.PI*2);
+    ctx.fillStyle = sg; ctx.fill();
+    ctx.restore();
+  }
 
-  // 2. Body radial gradient (light from top-left)
-  const bg = ctx.createRadialGradient(x-r*.3,y-r*.35,r*.04,x+r*.12,y+r*.12,r*1.18);
-  bg.addColorStop(0,c0); bg.addColorStop(.45,c1); bg.addColorStop(1,c2);
-  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
-  ctx.fillStyle = bg; ctx.fill();
-  ctx.shadowBlur=0; ctx.shadowOffsetX=0; ctx.shadowOffsetY=0;
+  // 1. Rim (cylinder side) — drawn as a thick elliptical band at the bottom
+  {
+    // Bottom ellipse of the cylinder
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(x, fy + DEPTH, r, r*TILT, 0, 0, Math.PI*2);
+    const rimG = ctx.createLinearGradient(x-r, fy+DEPTH*0.4, x+r, fy+DEPTH);
+    rimG.addColorStop(0, rc0);
+    rimG.addColorStop(0.5, rc1);
+    rimG.addColorStop(1, 'rgba(0,0,0,0.7)');
+    ctx.fillStyle = rimG;
+    ctx.fill();
 
-  // 3. Top-left bevel highlight
-  ctx.beginPath(); ctx.arc(x,y,r-.5,Math.PI*1.15,Math.PI*-.05,false);
-  ctx.strokeStyle='rgba(255,255,255,0.13)'; ctx.lineWidth=1.3; ctx.stroke();
+    // Clip to the visible rim band (between top and bottom ellipses)
+    ctx.beginPath();
+    ctx.ellipse(x, fy + DEPTH, r+.5, r*TILT+.5, 0, 0, Math.PI*2);
+    ctx.ellipse(x, fy, r+.5, r*TILT+.5, 0, 0, Math.PI*2);
+    ctx.clip('evenodd');
 
-  // 4. Bottom-right bevel shadow
-  ctx.beginPath(); ctx.arc(x,y,r-.5,Math.PI*-.05,Math.PI*1.15,false);
-  ctx.strokeStyle='rgba(0,0,0,0.3)'; ctx.lineWidth=1; ctx.stroke();
+    // Fill the rectangular side band
+    ctx.beginPath();
+    ctx.rect(x-r-1, fy-1, r*2+2, DEPTH+2);
+    const sideG = ctx.createLinearGradient(x-r, 0, x+r, 0);
+    sideG.addColorStop(0,   'rgba(0,0,0,0.55)');
+    sideG.addColorStop(0.25, rc1);
+    sideG.addColorStop(0.5,  rc0);
+    sideG.addColorStop(0.75, rc1);
+    sideG.addColorStop(1,   'rgba(0,0,0,0.6)');
+    ctx.fillStyle = sideG; ctx.fill();
+    ctx.restore();
+  }
 
-  // 5. Inner engraved ring
-  ctx.beginPath(); ctx.arc(x,y,r*.76,0,Math.PI*2);
-  ctx.strokeStyle='rgba(200,220,240,0.1)'; ctx.lineWidth=.7; ctx.stroke();
+  // 2. Face disc — circle with radial gradient + specular
+  {
+    ctx.save();
+    // Face is an ellipse (isometric top view)
+    ctx.beginPath();
+    ctx.ellipse(x, fy, r, r*(1-TILT*.5), 0, 0, Math.PI*2);
+    const bg = ctx.createRadialGradient(x-r*.25,fy-r*.28,r*.02, x+r*.1,fy+r*.12,r*1.1);
+    bg.addColorStop(0, fc0);
+    bg.addColorStop(0.4, fc1);
+    bg.addColorStop(1,   fc2);
+    ctx.fillStyle = bg; ctx.fill();
 
-  // 6. Centre α symbol
-  if (r>11) {
-    ctx.globalAlpha=.78;
-    ctx.fillStyle='rgba(237,232,223,0.85)';
-    ctx.font=`italic ${Math.round(r*.82)}px 'Cormorant Garamond',serif`;
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('α',x,y+r*.04);
+    // Inner engraved ring
+    ctx.beginPath();
+    ctx.ellipse(x, fy, r*.76, r*.76*(1-TILT*.5), 0, 0, Math.PI*2);
+    ctx.strokeStyle='rgba(200,220,240,0.12)'; ctx.lineWidth=.8; ctx.stroke();
+
+    // Specular highlight — bright oval top-left
+    const spec = ctx.createRadialGradient(x-r*.3,fy-r*.32,0, x-r*.28,fy-r*.28,r*.55);
+    spec.addColorStop(0,'rgba(255,255,255,0.28)');
+    spec.addColorStop(0.45,'rgba(255,255,255,0.06)');
+    spec.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.beginPath();
+    ctx.ellipse(x, fy, r, r*(1-TILT*.5), 0, 0, Math.PI*2);
+    ctx.fillStyle = spec; ctx.fill();
+
+    // Rim highlight arc (top edge catch-light)
+    ctx.beginPath();
+    ctx.ellipse(x, fy, r-.5, (r-.5)*(1-TILT*.5), 0, Math.PI*1.1, Math.PI*2.05, false);
+    ctx.strokeStyle='rgba(255,255,255,0.18)'; ctx.lineWidth=1.5; ctx.stroke();
+
+    // Bottom-rim shadow arc
+    ctx.beginPath();
+    ctx.ellipse(x, fy, r-.5, (r-.5)*(1-TILT*.5), 0, Math.PI*-.05, Math.PI*1.1, false);
+    ctx.strokeStyle='rgba(0,0,0,0.25)'; ctx.lineWidth=1; ctx.stroke();
+
+    // Centre α symbol
+    if (r>12) {
+      ctx.globalAlpha=.82;
+      ctx.fillStyle='rgba(237,232,223,0.88)';
+      ctx.font=`italic ${Math.round(r*.78)}px 'Cormorant Garamond',serif`;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      // squash text to match ellipse
+      ctx.save();
+      ctx.scale(1, 1-TILT*.5);
+      ctx.fillText('α', x, fy/(1-TILT*.5) + r*.03);
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  // 3. Gold ring for named agents
+  if (a.name) {
+    ctx.beginPath();
+    ctx.ellipse(x, fy, r+2, (r+2)*(1-TILT*.5), 0, 0, Math.PI*2);
+    ctx.strokeStyle='rgba(184,150,46,0.62)'; ctx.lineWidth=2; ctx.stroke();
   }
 
   ctx.restore(); ctx.globalAlpha=1;
 
-  // 7. Named agent — gold ring highlight
-  if (a.name) {
-    ctx.beginPath(); ctx.arc(x,y,r+1.5,0,Math.PI*2);
-    ctx.strokeStyle='rgba(184,150,46,0.55)'; ctx.lineWidth=1.5; ctx.stroke();
-  }
-
-  // 8. Tier-1 badge (small T1 at top-right of coin)
+  // 4. Tier-1 badge
   if (a.tier===1 && r>14) {
     ctx.save();
-    ctx.fillStyle='rgba(27,58,92,0.85)';
-    const bw=16, bh=10, bx=x+r*.6, by=y-r*.6-bh;
+    ctx.fillStyle='rgba(10,30,58,0.9)';
+    const bw=18, bh=11, bx=x+r*.62, by=fy-r*.62-bh;
     ctx.fillRect(bx-bw/2, by, bw, bh);
+    ctx.strokeStyle='rgba(168,150,60,0.5)'; ctx.lineWidth=.7;
+    ctx.strokeRect(bx-bw/2, by, bw, bh);
     ctx.fillStyle='rgba(208,220,233,0.9)';
     ctx.font=`bold 6.5px 'JetBrains Mono',monospace`;
     ctx.textAlign='center'; ctx.textBaseline='middle';
@@ -610,24 +686,22 @@ function drawCoin(a) {
     ctx.restore();
   }
 
-  // 9. Wallet label above coin
-  if (r>22) {
-    ctx.fillStyle='rgba(44,36,22,0.38)';
+  // 5. Wallet label above coin
+  if (r>24) {
+    ctx.fillStyle='rgba(200,216,232,0.45)';
     ctx.font=`7px 'JetBrains Mono',monospace`;
     ctx.textAlign='center'; ctx.textBaseline='alphabetic';
-    ctx.fillText('α'+Math.round(a.wallet), x, y-r-5);
+    ctx.fillText('α'+Math.round(a.wallet), x, fy-r*(1-TILT*.5)-7);
   }
 
-  // 10. Name (if set) or ID for notable agents, below coin
+  // 6. Name label below
   if (r>16) {
-    const label = a.name ? a.name : (r>30 ? a.id : null);
+    const label = a.name ? a.name : (r>32 ? a.id : null);
     if (label) {
-      ctx.fillStyle = a.name ? 'rgba(184,150,46,0.75)' : 'rgba(44,36,22,0.28)';
-      ctx.font = a.name
-        ? `italic 8px 'Cormorant Garamond',serif`
-        : `6px 'JetBrains Mono',monospace`;
+      ctx.fillStyle = a.name ? 'rgba(184,150,46,0.8)' : 'rgba(200,216,232,0.28)';
+      ctx.font = a.name ? `italic 8px 'Cormorant Garamond',serif` : `6px 'JetBrains Mono',monospace`;
       ctx.textAlign='center'; ctx.textBaseline='top';
-      ctx.fillText(label, x, y+r+4);
+      ctx.fillText(label, x, a.y+DEPTH+r*(TILT*.5)+4);
     }
   }
 

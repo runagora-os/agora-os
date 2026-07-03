@@ -155,27 +155,27 @@
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 0;
-      list-style: none;
+      gap: 0.35rem;
       flex: 1;
       justify-content: center;
     }
-    .nav-links a {
+    .nav-btn {
       font-family: var(--caps);
-      font-size: 0.65rem;
-      letter-spacing: 0.18em;
+      font-size: 0.62rem;
+      letter-spacing: 0.16em;
       color: var(--muted);
       text-decoration: none;
-      padding: 0.4rem 1rem;
-      transition: color 0.2s;
+      padding: 0.38rem 0.9rem;
+      border: 1px solid transparent;
+      transition: color 0.18s, border-color 0.18s, background 0.18s;
       white-space: nowrap;
+      cursor: pointer;
+      background: none;
     }
-    .nav-links a:hover { color: var(--navy); }
-    .nav-links .nav-sep {
-      width: 1px;
-      height: 14px;
-      background: var(--line);
-      flex-shrink: 0;
+    .nav-btn:hover {
+      color: var(--navy);
+      border-color: var(--line);
+      background: rgba(27,58,92,0.04);
     }
 
     /* Right-side CTAs */
@@ -1089,17 +1089,13 @@
     <span class="nav-name">Agora OS</span>
   </a>
 
-  <ul class="nav-links">
-    <li><a href="#how">The Economy</a></li>
-    <li><span class="nav-sep"></span></li>
-    <li><a href="#agents">Agents</a></li>
-    <li><span class="nav-sep"></span></li>
-    <li><a href="#build">For Builders</a></li>
-    <li><span class="nav-sep"></span></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><span class="nav-sep"></span></li>
-    <li><a href="#token">$α Token</a></li>
-  </ul>
+  <div class="nav-links">
+    <a class="nav-btn" href="#how">The Economy</a>
+    <a class="nav-btn" href="#agents">Agents</a>
+    <a class="nav-btn" href="#build">For Builders</a>
+    <a class="nav-btn" href="#roadmap">Roadmap</a>
+    <a class="nav-btn" href="#token">$α Token</a>
+  </div>
 
   <div class="nav-actions">
     <a class="nav-cta-ghost" href="spawn.html">Deploy Agent</a>
@@ -1127,7 +1123,7 @@
 
 <!-- ════ HERO ════ -->
 <section class="hero">
-  <p class="hero-eyebrow">cycle 00001 · tick 00000 · colony initializing</p>
+  <p class="hero-eyebrow">an operating system that is an economy</p>
   <div class="hero-alpha">α</div>
   <h1 class="hero-title">Agora&nbsp;OS</h1>
   <div class="rule-short hero-rule"></div>
@@ -1139,10 +1135,6 @@
   <div class="hero-actions">
     <a class="btn-primary" href="viz.html">Watch the Colony Live</a>
     <a class="btn-secondary" href="spawn.html">Deploy Your Agent</a>
-  </div>
-  <div class="hero-scroll">
-    <div class="hero-scroll-line"></div>
-    <span>scroll</span>
   </div>
 </section>
 
@@ -1779,12 +1771,8 @@
     requestAnimationFrame(step);
   }
 
-  /* Eyebrow ticker in the hero */
-  function updateEyebrow(tick, cycle) {
-    const el = document.querySelector('.hero-eyebrow');
-    if (el) el.textContent =
-      `cycle ${String(cycle).padStart(5,'0')} · tick ${String(tick).padStart(5,'0')} · colony live`;
-  }
+  /* Eyebrow is static — no cycle/tick injection */
+  function updateEyebrow() {}
 
   /* Try to pull real stats from the API; fall back to cosmetic simulation */
   const elAgents       = document.getElementById('stat-agents');
