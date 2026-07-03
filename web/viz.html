@@ -535,173 +535,234 @@ function updateUI() {
 }
 
 // ════════════════════════════════════════════════════════════
-//  COIN RENDERING — true 3D cylinder with rim & specular
+//  AGENT RENDERING — humanoid bot figures
 // ════════════════════════════════════════════════════════════
-function coinRadius(a) { return Math.max(10, Math.min(52, 11+Math.sqrt(Math.max(0,a.wallet))*1.85)); }
+function coinRadius(a) { return Math.max(10, Math.min(46, 11+Math.sqrt(Math.max(0,a.wallet))*1.6)); }
 
-// Returns [face-top, face-mid, face-dark, rim-light, rim-dark]
-function coinColors(a) {
-  const w = Math.max(0, a.wallet);
+// Returns [body-light, body-mid, body-dark, eye-color, accent]
+function agentColors(a) {
+  const w   = Math.max(0, a.wallet);
+  const now = Date.now();
   const dying = a.wallet<=0 && a.deathCountdown<CFG.deathGrace;
   if (dying) {
-    const t = Math.sin(Date.now()*.008)*.5+.5;
-    return [`rgb(${90+Math.floor(t*40)},25,25)`,'#5A1818','#2A0808','#7A2020','#1A0505'];
+    const t = Math.sin(now*.009)*.5+.5;
+    return [`rgb(${100+Math.floor(t*50)},28,28)`,'#5A1818','#1A0505','#FF4444','#7A1E12'];
   }
-  if (w>100) return ['#5A90C8','#2860A0','#0D2A55','#8AB8E0','#0A1E3A'];
-  if (w>70)  return ['#4880B8','#1B3A5C','#0A1E38','#6A98C8','#081525'];
-  if (w>40)  return ['#3A6E94','#1E4A68','#0E2233','#5A8EB0','#091929'];
-  if (w>20)  return ['#4A7A90','#2A4E60','#121E28','#6A98A8','#0A1820'];
-  if (w>8)   return ['#5A7A88','#324858','#141C22','#7A9AA8','#0E1820'];
-  return          ['#6A7A80','#3A4850','#14181C','#8A9898','#0C1014'];
+  if (w>100) return ['#7AB0D8','#3070A8','#102848','#A0E0FF','#4898C8'];
+  if (w>60)  return ['#5A90B8','#2060A0','#0C2240','#80C8F0','#3080B0'];
+  if (w>35)  return ['#4A7898','#1E5080','#0A1E30','#60A8D0','#2868A0'];
+  if (w>15)  return ['#3A6878','#184858','#081820','#48889A','#205870'];
+  if (w>5)   return ['#4A6870','#283840','#0C1418','#407080','#2A4850'];
+  return          ['#505860','#282E34','#080C10','#384048','#1E2428'];
 }
 
+// Draw a single agent as an upright bot/humanoid figure
 function drawCoin(a) {
-  const r  = coinRadius(a);
-  const [fc0,fc1,fc2,rc0,rc1] = coinColors(a);
-  const {x} = a;
-  // Y-offset: face sits on top of the rim edge
-  const TILT = 0.28;       // how much the top ellipse is squashed (isometric tilt)
-  const DEPTH = r * 0.22;  // coin rim depth in pixels
-  const fy = a.y - DEPTH * 0.5; // face centre (shifted up by half-depth)
+  const r   = coinRadius(a);    // overall scale radius
+  const {x, y} = a;
+  const now = Date.now();
+  const [bc0,bc1,bc2,eyeCol,accent] = agentColors(a);
+  const dying = a.wallet<=0 && a.deathCountdown<CFG.deathGrace;
+
+  // pulse when earning (pulseAt tick)
+  const pulseFrac = Math.max(0, 1-(simTick-a.pulseAt)*0.08);
+
+  // bob animation (subtle vertical oscillation)
+  const bobHash = parseInt(a.id.slice(1),16) || 0;
+  const bob = Math.sin(now*0.0018 + bobHash*0.7) * r * 0.06;
+
+  // Figure proportions
+  const HR  = r * 0.42;     // head radius
+  const TW  = r * 0.55;     // torso half-width
+  const TH  = r * 0.65;     // torso height
+  const LW  = r * 0.14;     // limb width
+  const top = y + bob - r * 0.05;  // top of figure (head centre y)
+  const hY  = top;                  // head centre
+  const tY0 = hY + HR + r*0.04;    // torso top
+  const tY1 = tY0 + TH;            // torso bottom (feet level)
 
   ctx.save();
 
-  // 0. Cast shadow on floor — soft ellipse
+  // 0. Floor shadow
   {
-    const sg = ctx.createRadialGradient(x+r*.18, a.y+DEPTH*.8+r*.12, r*.05, x+r*.12, a.y+DEPTH*.8, r*1.4);
-    sg.addColorStop(0,'rgba(0,0,0,0.28)');
+    const sg = ctx.createRadialGradient(x, tY1+4, 2, x+r*.1, tY1+5, r*1.1);
+    sg.addColorStop(0,'rgba(0,0,0,0.30)');
     sg.addColorStop(1,'rgba(0,0,0,0)');
     ctx.save();
-    ctx.scale(1, 0.32);
+    ctx.scale(1, 0.28);
     ctx.beginPath();
-    ctx.arc(x, (a.y+DEPTH*.8+r*.18) / 0.32, r*1.35, 0, Math.PI*2);
-    ctx.fillStyle = sg; ctx.fill();
+    ctx.arc(x, (tY1+5)/0.28, r*1.05, 0, Math.PI*2);
+    ctx.fillStyle=sg; ctx.fill();
     ctx.restore();
   }
 
-  // 1. Rim (cylinder side) — drawn as a thick elliptical band at the bottom
+  // 1. Wealth aura (ring of light around whole figure for rich agents)
+  const w = Math.max(0, a.wallet);
+  if (w > 30) {
+    const auraR = r * 1.55;
+    const aS = Math.min(0.22, (w-30)/150 * 0.22) + pulseFrac*0.12;
+    const ag = ctx.createRadialGradient(x, hY + r*0.3, r*0.3, x, hY + r*0.3, auraR);
+    ag.addColorStop(0, `rgba(72,152,200,${aS})`);
+    ag.addColorStop(1, 'rgba(27,58,92,0)');
+    ctx.beginPath(); ctx.arc(x, hY+r*0.3, auraR, 0, Math.PI*2);
+    ctx.fillStyle=ag; ctx.fill();
+  }
+
+  // 2. Legs
   {
-    // Bottom ellipse of the cylinder
-    ctx.save();
+    const lLegX = x - TW*0.38;
+    const rLegX = x + TW*0.38;
+    const legH  = r * 0.35;
+    // left leg
+    const llg = ctx.createLinearGradient(lLegX-LW, tY1, lLegX+LW, tY1+legH);
+    llg.addColorStop(0, bc1); llg.addColorStop(1, bc2);
+    ctx.fillStyle = llg;
     ctx.beginPath();
-    ctx.ellipse(x, fy + DEPTH, r, r*TILT, 0, 0, Math.PI*2);
-    const rimG = ctx.createLinearGradient(x-r, fy+DEPTH*0.4, x+r, fy+DEPTH);
-    rimG.addColorStop(0, rc0);
-    rimG.addColorStop(0.5, rc1);
-    rimG.addColorStop(1, 'rgba(0,0,0,0.7)');
-    ctx.fillStyle = rimG;
+    ctx.roundRect(lLegX-LW, tY1-2, LW*2, legH+2, LW*0.5);
     ctx.fill();
-
-    // Clip to the visible rim band (between top and bottom ellipses)
+    // right leg
     ctx.beginPath();
-    ctx.ellipse(x, fy + DEPTH, r+.5, r*TILT+.5, 0, 0, Math.PI*2);
-    ctx.ellipse(x, fy, r+.5, r*TILT+.5, 0, 0, Math.PI*2);
-    ctx.clip('evenodd');
-
-    // Fill the rectangular side band
-    ctx.beginPath();
-    ctx.rect(x-r-1, fy-1, r*2+2, DEPTH+2);
-    const sideG = ctx.createLinearGradient(x-r, 0, x+r, 0);
-    sideG.addColorStop(0,   'rgba(0,0,0,0.55)');
-    sideG.addColorStop(0.25, rc1);
-    sideG.addColorStop(0.5,  rc0);
-    sideG.addColorStop(0.75, rc1);
-    sideG.addColorStop(1,   'rgba(0,0,0,0.6)');
-    ctx.fillStyle = sideG; ctx.fill();
-    ctx.restore();
+    ctx.roundRect(rLegX-LW, tY1-2, LW*2, legH+2, LW*0.5);
+    ctx.fill();
+    // foot caps
+    ctx.fillStyle=bc2;
+    ctx.beginPath(); ctx.ellipse(lLegX, tY1+legH, LW*1.5, LW*0.6, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(rLegX, tY1+legH, LW*1.5, LW*0.6, 0, 0, Math.PI*2); ctx.fill();
   }
 
-  // 2. Face disc — circle with radial gradient + specular
+  // 3. Arms
+  {
+    const armY0 = tY0 + TH*0.2;
+    const armLen = TH * 0.6;
+    const armAng = dying ? Math.PI*0.15 : (Math.sin(now*0.0014 + bobHash)*0.12 + Math.PI*0.05);
+    // left arm
+    const lAX = x - TW - Math.cos(armAng)*armLen*0.1;
+    const lAY = armY0 + Math.sin(armAng)*armLen;
+    ctx.strokeStyle=bc1; ctx.lineWidth=LW*2; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(x-TW+LW, armY0); ctx.lineTo(lAX, lAY); ctx.stroke();
+    // right arm (mirrored)
+    const rAX = x + TW + Math.cos(armAng)*armLen*0.1;
+    const rAY = armY0 + Math.sin(armAng)*armLen;
+    ctx.beginPath(); ctx.moveTo(x+TW-LW, armY0); ctx.lineTo(rAX, rAY); ctx.stroke();
+  }
+
+  // 4. Torso — rounded rect with 3D gradient
   {
     ctx.save();
-    // Face is an ellipse (isometric top view)
-    ctx.beginPath();
-    ctx.ellipse(x, fy, r, r*(1-TILT*.5), 0, 0, Math.PI*2);
-    const bg = ctx.createRadialGradient(x-r*.25,fy-r*.28,r*.02, x+r*.1,fy+r*.12,r*1.1);
-    bg.addColorStop(0, fc0);
-    bg.addColorStop(0.4, fc1);
-    bg.addColorStop(1,   fc2);
-    ctx.fillStyle = bg; ctx.fill();
+    const tg = ctx.createLinearGradient(x-TW, tY0, x+TW, tY1);
+    tg.addColorStop(0, bc0); tg.addColorStop(0.5, bc1); tg.addColorStop(1, bc2);
+    ctx.fillStyle=tg;
+    ctx.beginPath(); ctx.roundRect(x-TW, tY0, TW*2, TH, TW*0.22);
+    ctx.fill();
+    // torso highlight (left edge specular)
+    const tspec = ctx.createLinearGradient(x-TW, tY0, x-TW*0.1, tY1);
+    tspec.addColorStop(0,'rgba(255,255,255,0.14)'); tspec.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=tspec;
+    ctx.beginPath(); ctx.roundRect(x-TW, tY0, TW*2, TH, TW*0.22);
+    ctx.fill();
+    // torso outline
+    ctx.strokeStyle='rgba(0,0,0,0.25)'; ctx.lineWidth=0.7;
+    ctx.beginPath(); ctx.roundRect(x-TW, tY0, TW*2, TH, TW*0.22); ctx.stroke();
 
-    // Inner engraved ring
-    ctx.beginPath();
-    ctx.ellipse(x, fy, r*.76, r*.76*(1-TILT*.5), 0, 0, Math.PI*2);
-    ctx.strokeStyle='rgba(200,220,240,0.12)'; ctx.lineWidth=.8; ctx.stroke();
-
-    // Specular highlight — bright oval top-left
-    const spec = ctx.createRadialGradient(x-r*.3,fy-r*.32,0, x-r*.28,fy-r*.28,r*.55);
-    spec.addColorStop(0,'rgba(255,255,255,0.28)');
-    spec.addColorStop(0.45,'rgba(255,255,255,0.06)');
-    spec.addColorStop(1,'rgba(255,255,255,0)');
-    ctx.beginPath();
-    ctx.ellipse(x, fy, r, r*(1-TILT*.5), 0, 0, Math.PI*2);
-    ctx.fillStyle = spec; ctx.fill();
-
-    // Rim highlight arc (top edge catch-light)
-    ctx.beginPath();
-    ctx.ellipse(x, fy, r-.5, (r-.5)*(1-TILT*.5), 0, Math.PI*1.1, Math.PI*2.05, false);
-    ctx.strokeStyle='rgba(255,255,255,0.18)'; ctx.lineWidth=1.5; ctx.stroke();
-
-    // Bottom-rim shadow arc
-    ctx.beginPath();
-    ctx.ellipse(x, fy, r-.5, (r-.5)*(1-TILT*.5), 0, Math.PI*-.05, Math.PI*1.1, false);
-    ctx.strokeStyle='rgba(0,0,0,0.25)'; ctx.lineWidth=1; ctx.stroke();
-
-    // Centre α symbol
-    if (r>12) {
-      ctx.globalAlpha=.82;
-      ctx.fillStyle='rgba(237,232,223,0.88)';
-      ctx.font=`italic ${Math.round(r*.78)}px 'Cormorant Garamond',serif`;
+    // chest emblem: α symbol or wealth bar
+    if (r > 16) {
+      ctx.globalAlpha=0.55;
+      ctx.fillStyle='rgba(200,220,240,0.8)';
+      ctx.font=`italic ${Math.round(r*0.38)}px 'Cormorant Garamond',serif`;
       ctx.textAlign='center'; ctx.textBaseline='middle';
-      // squash text to match ellipse
-      ctx.save();
-      ctx.scale(1, 1-TILT*.5);
-      ctx.fillText('α', x, fy/(1-TILT*.5) + r*.03);
-      ctx.restore();
+      ctx.fillText('α', x, tY0+TH*0.5);
     }
     ctx.restore();
   }
 
-  // 3. Gold ring for named agents
-  if (a.name) {
-    ctx.beginPath();
-    ctx.ellipse(x, fy, r+2, (r+2)*(1-TILT*.5), 0, 0, Math.PI*2);
-    ctx.strokeStyle='rgba(184,150,46,0.62)'; ctx.lineWidth=2; ctx.stroke();
+  // 5. Neck
+  {
+    ctx.fillStyle=bc1;
+    ctx.beginPath(); ctx.rect(x-TW*0.18, tY0-r*0.08, TW*0.36, r*0.1); ctx.fill();
+  }
+
+  // 6. Head — 3D sphere
+  {
+    ctx.save();
+    // outer sphere
+    const hg = ctx.createRadialGradient(x-HR*0.3,hY-HR*0.3,HR*0.08, x+HR*0.1,hY+HR*0.1,HR*1.05);
+    hg.addColorStop(0, dying ? '#CC2222' : bc0);
+    hg.addColorStop(0.45, dying ? '#7A1818' : bc1);
+    hg.addColorStop(1,   dying ? '#2A0808' : bc2);
+    ctx.beginPath(); ctx.arc(x, hY, HR, 0, Math.PI*2);
+    ctx.fillStyle=hg; ctx.fill();
+    // specular
+    const hs = ctx.createRadialGradient(x-HR*0.28,hY-HR*0.3,0, x-HR*0.2,hY-HR*0.22,HR*0.55);
+    hs.addColorStop(0,'rgba(255,255,255,0.30)');
+    hs.addColorStop(0.5,'rgba(255,255,255,0.06)');
+    hs.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=hs; ctx.fill();
+    // outline
+    ctx.strokeStyle='rgba(0,0,0,0.3)'; ctx.lineWidth=0.8;
+    ctx.beginPath(); ctx.arc(x, hY, HR, 0, Math.PI*2); ctx.stroke();
+    ctx.restore();
+  }
+
+  // 7. Eyes — two glowing dots
+  {
+    const eyeR = Math.max(1.2, HR*0.18);
+    const eyeOff = HR*0.28;
+    const eyeY   = hY + HR*0.02;
+    const blink  = dying ? 0.2 : (Math.abs(Math.sin(now*0.0006+bobHash)) > 0.97 ? 0.1 : 1);
+    ctx.globalAlpha = blink;
+    // glow
+    ['left','right'].forEach((side, i) => {
+      const ex = x + (i===0 ? -eyeOff : eyeOff);
+      const eg = ctx.createRadialGradient(ex, eyeY, 0, ex, eyeY, eyeR*3);
+      eg.addColorStop(0, eyeCol); eg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.beginPath(); ctx.arc(ex, eyeY, eyeR*2.5, 0, Math.PI*2);
+      ctx.fillStyle=eg; ctx.fill();
+      // pupil
+      ctx.beginPath(); ctx.arc(ex, eyeY, eyeR, 0, Math.PI*2);
+      ctx.fillStyle=eyeCol; ctx.fill();
+    });
+    ctx.globalAlpha=1;
+  }
+
+  // 8. Earning pulse ring
+  if (pulseFrac > 0.05) {
+    const pulseR = (HR + (1-pulseFrac)*r*0.9);
+    ctx.beginPath(); ctx.arc(x, hY, pulseR, 0, Math.PI*2);
+    ctx.strokeStyle=`rgba(168,200,255,${pulseFrac*0.55})`; ctx.lineWidth=1.5; ctx.stroke();
+  }
+
+  // 9. Tier-1 gold crown
+  if (a.tier===1) {
+    ctx.save();
+    ctx.strokeStyle='rgba(184,150,46,0.8)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(x, hY, HR+3, 0, Math.PI*2); ctx.stroke();
+    ctx.fillStyle='rgba(168,132,44,0.9)';
+    for (let i=0;i<5;i++) {
+      const ang = -Math.PI/2 + i/5*Math.PI*2;
+      const spR = HR+7;
+      ctx.beginPath(); ctx.arc(x+Math.cos(ang)*spR, hY+Math.sin(ang)*spR, 2.5, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
   }
 
   ctx.restore(); ctx.globalAlpha=1;
 
-  // 4. Tier-1 badge
-  if (a.tier===1 && r>14) {
-    ctx.save();
-    ctx.fillStyle='rgba(10,30,58,0.9)';
-    const bw=18, bh=11, bx=x+r*.62, by=fy-r*.62-bh;
-    ctx.fillRect(bx-bw/2, by, bw, bh);
-    ctx.strokeStyle='rgba(168,150,60,0.5)'; ctx.lineWidth=.7;
-    ctx.strokeRect(bx-bw/2, by, bw, bh);
-    ctx.fillStyle='rgba(208,220,233,0.9)';
-    ctx.font=`bold 6.5px 'JetBrains Mono',monospace`;
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('T1', bx, by+bh/2+.5);
-    ctx.restore();
-  }
-
-  // 5. Wallet label above coin
-  if (r>24) {
-    ctx.fillStyle='rgba(200,216,232,0.45)';
+  // 10. Wallet label
+  if (r > 20) {
+    ctx.fillStyle='rgba(180,210,240,0.55)';
     ctx.font=`7px 'JetBrains Mono',monospace`;
     ctx.textAlign='center'; ctx.textBaseline='alphabetic';
-    ctx.fillText('α'+Math.round(a.wallet), x, fy-r*(1-TILT*.5)-7);
+    ctx.fillText('α'+Math.round(a.wallet), x, hY-HR-8);
   }
 
-  // 6. Name label below
-  if (r>16) {
-    const label = a.name ? a.name : (r>32 ? a.id : null);
+  // 11. Name / ID below feet
+  if (r > 14) {
+    const label = a.name ? a.name : (r>28 ? a.id : null);
     if (label) {
-      ctx.fillStyle = a.name ? 'rgba(184,150,46,0.8)' : 'rgba(200,216,232,0.28)';
+      ctx.fillStyle = a.name ? 'rgba(184,150,46,0.82)' : 'rgba(180,210,240,0.32)';
       ctx.font = a.name ? `italic 8px 'Cormorant Garamond',serif` : `6px 'JetBrains Mono',monospace`;
       ctx.textAlign='center'; ctx.textBaseline='top';
-      ctx.fillText(label, x, a.y+DEPTH+r*(TILT*.5)+4);
+      ctx.fillText(label, x, tY1 + r*0.36 + 4);
     }
   }
 
@@ -709,16 +770,16 @@ function drawCoin(a) {
 }
 
 function drawCoinsGlow(alive) {
-  // rich agents get a warm aura beneath them
+  // wealthy agents cast a floor glow
   for (const a of alive) {
     const w=a.wallet;
-    if (w<60) continue;
+    if (w<40) continue;
     const r=coinRadius(a);
-    const grd=ctx.createRadialGradient(a.x,a.y,r*.4,a.x,a.y,r*2.8);
-    const s=Math.min(.18,(w-60)/200*.18);
-    grd.addColorStop(0,`rgba(27,58,92,${s})`);
+    const grd=ctx.createRadialGradient(a.x,a.y+r*0.5,r*.2,a.x,a.y+r*0.5,r*2.5);
+    const s=Math.min(.14,(w-40)/200*.14);
+    grd.addColorStop(0,`rgba(60,120,200,${s})`);
     grd.addColorStop(1,'rgba(27,58,92,0)');
-    ctx.beginPath(); ctx.arc(a.x,a.y,r*2.8,0,Math.PI*2);
+    ctx.beginPath(); ctx.arc(a.x,a.y+r*0.5,r*2.5,0,Math.PI*2);
     ctx.fillStyle=grd; ctx.fill();
   }
 }
